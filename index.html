@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>证物图存证系统 - 云端版</title>
+    <!-- ECharts CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: #f0f2f6;
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            padding: 24px;
+            color: #1e293b;
+        }
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+        .header {
+            margin-bottom: 24px;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+        }
+        .header p {
+            color: #475569;
+            margin-top: 6px;
+        }
+        .dashboard {
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            gap: 24px;
+            align-items: start;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03), 0 2px 6px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid #e9eef3;
+        }
+        .card-header {
+            padding: 18px 20px;
+            border-bottom: 1px solid #eff3f8;
+            font-weight: 600;
+            font-size: 1.1rem;
+            background: #fefefe;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .card-header i {
+            color: #3b82f6;
+            margin-right: 8px;
+        }
+        .card-body {
+            padding: 20px;
+        }
+        .role-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .role-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .role-item:hover {
+            background: #f1f5f9;
+            transform: translateX(2px);
+        }
+        .role-item.active {
+            background: #eef2ff;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 6px rgba(59,130,246,0.1);
+        }
+        .role-name {
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .role-name i {
+            color: #3b82f6;
+            font-size: 1.1rem;
+        }
+        .role-badge {
+            background: #e2e8f0;
+            border-radius: 30px;
+            padding: 2px 10px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #334155;
+        }
+        .btn-create {
+            width: 100%;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            margin-top: 8px;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-create:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+        .images-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .image-card {
+            background: #ffffff;
+            border-radius: 20px;
+            border: 1px solid #edf2f7;
+            overflow: hidden;
+            transition: 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+        }
+        .image-preview {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #f1f5f9;
+            display: block;
+            border-bottom: 1px solid #ecf3fa;
+        }
+        .image-details {
+            padding: 14px;
+        }
+        .annotation-area {
+            margin-bottom: 14px;
+        }
+        .annotation-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #5b6e8c;
+            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .annotation-text {
+            width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 10px 12px;
+            font-size: 0.85rem;
+            background: #fafcff;
+            resize: vertical;
+            font-family: inherit;
+        }
+        .save-annotation-btn {
+            margin-top: 8px;
+            background: none;
+            border: none;
+            color: #3b82f6;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .comments-section {
+            margin-top: 12px;
+            border-top: 1px solid #eff3f8;
+            padding-top: 12px;
+        }
+        .comment-list {
+            max-height: 100px;
+            overflow-y: auto;
+            margin-bottom: 8px;
+            font-size: 0.8rem;
+        }
+        .comment-item {
+            background: #f8fafc;
+            padding: 6px 10px;
+            border-radius: 12px;
+            margin-bottom: 6px;
+            word-break: break-word;
+            color: #334155;
+        }
+        .add-comment {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+        .add-comment input {
+            flex: 1;
+            border: 1px solid #e2e8f0;
+            border-radius: 40px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+        }
+        .add-comment button {
+            background: #eef2ff;
+            border: none;
+            border-radius: 30px;
+            padding: 0 14px;
+            color: #3b82f6;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.7rem;
+        }
+        .delete-img-btn {
+            background: #fee2e2;
+            border: none;
+            border-radius: 20px;
+            padding: 4px 10px;
+            font-size: 0.7rem;
+            color: #dc2626;
+            cursor: pointer;
+            margin-top: 8px;
+            width: 100%;
+        }
+        .upload-area {
+            margin-top: 20px;
+            border: 1px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 16px;
+            text-align: center;
+            background: #fafcff;
+        }
+        .upload-btn {
+            background: #eef2ff;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 500;
+            color: #2563eb;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94a3b8;
+        }
+        .graph-container {
+            height: 380px;
+            width: 100%;
+            background: #fefefe;
+            border-radius: 18px;
+        }
+        .relation-form {
+            margin-top: 20px;
+            background: #f9fbfe;
+            padding: 16px;
+            border-radius: 20px;
+        }
+        .relation-form select, .relation-form input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 40px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 12px;
+            background: white;
+        }
+        .btn-add-relation {
+            background: #8b5cf6;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 40px;
+            width: 100%;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .btn-add-relation:hover {
+            background: #7c3aed;
+        }
+        .relation-note {
+            font-size: 0.7rem;
+            color: #64748b;
+            text-align: center;
+            margin-top: 8px;
+        }
+        @media (max-width: 1000px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            body {
+                padding: 16px;
+            }
+        }
+        button {
+            cursor: pointer;
+        }
+        i {
+            pointer-events: none;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <h1><i class="fas fa-camera-retro"></i> 证物图存证系统（云端版）</h1>
+        <p>角色档案管理 | 物证影像库 | 关系网络推演 | 数据永久保存</p>
+    </div>
+
+    <div class="dashboard">
+        <!-- 左侧角色面板 -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-users"></i> 角色档案</span>
+                <span style="font-size:0.75rem; background:#eef2ff; padding:4px 8px; border-radius:30px;">云端存储</span>
+            </div>
+            <div class="card-body">
+                <div id="roleListContainer" class="role-list">
+                    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> 加载中...</div>
+                </div>
+                <button id="createRoleBtn" class="btn-create"><i class="fas fa-user-plus"></i> 创建新角色</button>
+            </div>
+        </div>
+
+        <!-- 中间：当前角色的证物图库 -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-images"></i> <span id="currentRoleNameDisplay">--</span> · 证物图库</span>
+                <div>
+                    <i class="fas fa-upload" style="color:#3b82f6;"></i> 上传物证照片
+                </div>
+            </div>
+            <div class="card-body">
+                <div id="imagesGridContainer" class="images-grid">
+                    <div class="loading"><i class="fas fa-spinner fa-pulse"></i> 加载中...</div>
+                </div>
+                <div id="uploadZone" style="display: none;" class="upload-area">
+                    <input type="file" id="imageUploadInput" accept="image/*" style="display: none;">
+                    <button id="triggerUploadBtn" class="upload-btn"><i class="fas fa-cloud-upload-alt"></i> 上传新物证图</button>
+                    <p style="font-size:0.7rem; margin-top:6px;">支持 JPG/PNG，为角色存证</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- 右侧：关系图谱 -->
+        <div class="card">
+            <div class="card-header">
+                <span><i class="fas fa-project-diagram"></i> 角色关系图谱</span>
+                <i class="fas fa-share-alt" style="color:#8b5cf6;"></i>
+            </div>
+            <div class="card-body">
+                <div id="graphChart" class="graph-container"></div>
+                <div class="relation-form">
+                    <div style="font-weight:500; margin-bottom:8px;"><i class="fas fa-link"></i> 设定角色间关系</div>
+                    <select id="relationSource">
+                        <option value="">选择角色A</option>
+                    </select>
+                    <select id="relationTarget">
+                        <option value="">选择角色B</option>
+                    </select>
+                    <input type="text" id="relationLabel" placeholder="关系描述，如：同伙 / 对立 / 亲属" value="关联">
+                    <button id="addRelationBtn" class="btn-add-relation"><i class="fas fa-plus-circle"></i> 添加/更新关系</button>
+                    <div class="relation-note"><i class="fas fa-info-circle"></i> 点击图谱节点可切换角色</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Supabase SDK 引入 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // ==================== 配置区（请替换为你的 Supabase 项目信息）====================
+    SUPABASE_URL = 'https://xefihkiawideoovmllzq.supabase.co';      // 替换成你的 Project URL
+    SUPABASE_ANON_KEY = 'sb_publishable_uPlXXi1BLww5Jo1t_KlrlQ_-BOMeHZg';                  // 替换成你的 anon public key
+    // =======================================================================
+
+    // 初始化 Supabase 客户端
+     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // 全局数据变量
+    let roles = [];            // 角色列表
+    let imagesByRole = {};     // 按角色ID分组的图片对象 { roleId: [images] }
+    let relations = [];        // 关系列表
+    let selectedRoleId = null; // 当前选中的角色ID
+
+    let echartsInstance = null;
+
+    // ==================== 辅助函数 ====================
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    // 从图片URL中提取存储路径（用于删除Storage文件）
+    function extractStoragePathFromUrl(url) {
+        try {
+            const urlObj = new URL(url);
+            const pathParts = urlObj.pathname.split('/');
+            const bucketIndex = pathParts.indexOf('evidence-images');
+            if (bucketIndex !== -1 && pathParts[bucketIndex + 1]) {
+                return pathParts.slice(bucketIndex + 1).join('/');
+            }
+        } catch(e) {}
+        return null;
+    }
+
+    // ==================== 数据加载 ====================
+    async function loadData() {
+        try {
+            // 加载角色
+            const { data: rolesData, error: rolesError } = await supabase
+                .from('roles')
+                .select('*')
+                .order('id');
+            if (rolesError) throw rolesError;
+            roles = rolesData || [];
+
+            // 加载图片
+            const { data: imagesData, error: imagesError } = await supabase
+                .from('images')
+                .select('*')
+                .order('created_at');
+            if (imagesError) throw imagesError;
+            imagesByRole = {};
+            (imagesData || []).forEach(img => {
+                if (!imagesByRole[img.role_id]) imagesByRole[img.role_id] = [];
+                imagesByRole[img.role_id].push(img);
+            });
+
+            // 加载关系
+            const { data: relationsData, error: relError } = await supabase
+                .from('relations')
+                .select('*');
+            if (relError) throw relError;
+            relations = relationsData || [];
+
+            // 设置默认选中角色
+            if (roles.length > 0) {
+                selectedRoleId = roles[0].id;
+            } else {
+                selectedRoleId = null;
+            }
+
+            // 渲染界面
+            renderRoleList();
+            renderImagesForCurrentRole();
+            updateRelationSelectors();
+            renderGraph();
+        } catch (err) {
+            console.error('数据加载失败：', err);
+            alert('数据加载失败，请检查 Supabase 配置和网络连接。\n' + err.message);
+        }
+    }
+
+    // ==================== 渲染函数 ====================
+    function renderRoleList() {
+        const container = document.getElementById('roleListContainer');
+        if (!container) return;
+        if (roles.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-user-slash"></i> 暂无角色，点击上方创建</div>';
+            return;
+        }
+        container.innerHTML = '';
+        roles.forEach(role => {
+            const imageCount = imagesByRole[role.id] ? imagesByRole[role.id].length : 0;
+            const roleDiv = document.createElement('div');
+            roleDiv.className = `role-item ${selectedRoleId === role.id ? 'active' : ''}`;
+            roleDiv.setAttribute('data-id', role.id);
+            roleDiv.innerHTML = `
+                <div class="role-name">
+                    <i class="fas fa-user-circle"></i> ${escapeHtml(role.name)}
+                </div>
+                <div class="role-badge">${imageCount} 证物</div>
+            `;
+            roleDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectedRoleId = role.id;
+                renderRoleList();
+                renderImagesForCurrentRole();
+                updateCurrentRoleName();
+                // 不需要重新渲染图谱，但下拉框需要更新
+                updateRelationSelectors();
+            });
+            container.appendChild(roleDiv);
+        });
+        updateCurrentRoleName();
+    }
+
+    function updateCurrentRoleName() {
+        const role = roles.find(r => r.id === selectedRoleId);
+        const span = document.getElementById('currentRoleNameDisplay');
+        if (span) span.innerText = role ? role.name : '未选择';
+        const uploadZone = document.getElementById('uploadZone');
+        if (uploadZone) uploadZone.style.display = role ? 'block' : 'none';
+    }
+
+    function renderImagesForCurrentRole() {
+        const container = document.getElementById('imagesGridContainer');
+        if (!container) return;
+        if (!selectedRoleId) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-camera-slash"></i> 请先选择一个角色</div>';
+            return;
+        }
+        const images = imagesByRole[selectedRoleId] || [];
+        if (images.length === 0) {
+            container.innerHTML = '<div class="empty-state"><i class="fas fa-camera-slash"></i> 暂无物证图片，请点击上方上传存证</div>';
+            return;
+        }
+
+        container.innerHTML = '';
+        images.forEach(img => {
+            const imageCard = document.createElement('div');
+            imageCard.className = 'image-card';
+            imageCard.setAttribute('data-img-id', img.id);
+            // 确保 comments 是数组
+            const comments = Array.isArray(img.comments) ? img.comments : [];
+            imageCard.innerHTML = `
+                <img class="image-preview" src="${img.url}" alt="物证图" onerror="this.src='https://picsum.photos/id/1/300/200'">
+                <div class="image-details">
+                    <div class="annotation-area">
+                        <div class="annotation-label"><i class="fas fa-pen-alt"></i> 注释</div>
+                        <textarea class="annotation-text" data-imgid="${img.id}" placeholder="添加物证注释...">${escapeHtml(img.annotation || '')}</textarea>
+                        <button class="save-annotation-btn" data-imgid="${img.id}"><i class="fas fa-save"></i> 保存注释</button>
+                    </div>
+                    <div class="comments-section">
+                        <div class="annotation-label"><i class="fas fa-comment-dots"></i> 评论记录</div>
+                        <div class="comment-list" id="commentList-${img.id}">
+                            ${comments.map(c => `<div class="comment-item">💬 ${escapeHtml(c)}</div>`).join('')}
+                        </div>
+                        <div class="add-comment">
+                            <input type="text" id="newComment-${img.id}" placeholder="添加新评论..." />
+                            <button class="add-comment-btn" data-imgid="${img.id}">发表</button>
+                        </div>
+                    </div>
+                    <button class="delete-img-btn" data-imgid="${img.id}"><i class="fas fa-trash-alt"></i> 删除此证物</button>
+                </div>
+            `;
+            container.appendChild(imageCard);
+        });
+
+        // 绑定注释保存
+        document.querySelectorAll('.save-annotation-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const imgId = btn.getAttribute('data-imgid');
+                const textarea = document.querySelector(`.annotation-text[data-imgid="${imgId}"]`);
+                if (textarea) {
+                    const newAnnotation = textarea.value;
+                    await updateAnnotation(imgId, newAnnotation);
+                }
+            });
+        });
+
+        // 绑定添加评论
+        document.querySelectorAll('.add-comment-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const imgId = btn.getAttribute('data-imgid');
+                const inputField = document.getElementById(`newComment-${imgId}`);
+                if (inputField && inputField.value.trim() !== "") {
+                    await addComment(imgId, inputField.value.trim());
+                    inputField.value = '';
+                }
+            });
+        });
+
+        // 绑定删除图片
+        document.querySelectorAll('.delete-img-btn').forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                const imgId = btn.getAttribute('data-imgid');
+                if (confirm('确定要删除此证物图片吗？')) {
+                    const img = images.find(i => i.id === imgId);
+                    if (img) {
+                        await deleteImage(imgId, selectedRoleId, img.url);
+                    }
+                }
+            });
+        });
+    }
+
+    // ==================== CRUD 操作（Supabase）====================
+    async function createRole(name) {
+        if (!name.trim()) return;
+        const { data, error } = await supabase
+            .from('roles')
+            .insert([{ name: name.trim() }])
+            .select()
+            .single();
+        if (error) {
+            alert('创建角色失败：' + error.message);
+            return;
+        }
+        roles.push(data);
+        selectedRoleId = data.id;
+        renderRoleList();
+        renderImagesForCurrentRole();
+        updateRelationSelectors();
+        renderGraph();
+    }
+
+    async function uploadImage(roleId, file) {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${roleId}_${Date.now()}.${fileExt}`;
+        const filePath = `public/${fileName}`; // 放在 public 文件夹下
+
+        const { error: uploadError } = await supabase.storage
+            .from('evidence-images')
+            .upload(filePath, file);
+        if (uploadError) {
+            alert('图片上传失败：' + uploadError.message);
+            return;
+        }
+
+        const { data: urlData } = supabase.storage
+            .from('evidence-images')
+            .getPublicUrl(filePath);
+        const imageUrl = urlData.publicUrl;
+
+        const { data: imgRecord, error: dbError } = await supabase
+            .from('images')
+            .insert([{
+                role_id: roleId,
+                url: imageUrl,
+                annotation: '新物证图片，待添加注释',
+                comments: []
+            }])
+            .select()
+            .single();
+
+        if (dbError) {
+            alert('保存图片信息失败：' + dbError.message);
+            return;
+        }
+
+        if (!imagesByRole[roleId]) imagesByRole[roleId] = [];
+        imagesByRole[roleId].push(imgRecord);
+        renderImagesForCurrentRole();
+        renderRoleList();
+    }
+
+    async function updateAnnotation(imageId, newAnnotation) {
+        const { error } = await supabase
+            .from('images')
+            .update({ annotation: newAnnotation })
+            .eq('id', imageId);
+        if (error) {
+            alert('更新注释失败：' + error.message);
+            return;
+        }
+        // 更新本地缓存
+        for (const roleId in imagesByRole) {
+            const imgIndex = imagesByRole[roleId].findIndex(img => img.id === imageId);
+            if (imgIndex !== -1) {
+                imagesByRole[roleId][imgIndex].annotation = newAnnotation;
+                break;
+            }
+        }
+        renderImagesForCurrentRole(); // 刷新显示
+    }
+
+    async function addComment(imageId, commentText) {
+        // 获取当前评论数组
+        const { data: img, error: getError } = await supabase
+            .from('images')
+            .select('comments')
+            .eq('id', imageId)
+            .single();
+        if (getError) {
+            alert('获取评论失败：' + getError.message);
+            return;
+        }
+        const newComments = [...(img.comments || []), commentText];
+        const { error: updateError } = await supabase
+            .from('images')
+            .update({ comments: newComments })
+            .eq('id', imageId);
+        if (updateError) {
+            alert('添加评论失败：' + updateError.message);
+            return;
+        }
+        // 更新本地
+        for (const roleId in imagesByRole) {
+            const imgIndex = imagesByRole[roleId].findIndex(img => img.id === imageId);
+            if (imgIndex !== -1) {
+                imagesByRole[roleId][imgIndex].comments = newComments;
+                break;
+            }
+        }
+        renderImagesForCurrentRole();
+    }
+
+    async function deleteImage(imageId, roleId, imageUrl) {
+        // 尝试删除 Storage 中的文件
+        const storagePath = extractStoragePathFromUrl(imageUrl);
+        if (storagePath) {
+            await supabase.storage.from('evidence-images').remove([storagePath]);
+        }
+        const { error } = await supabase
+            .from('images')
+            .delete()
+            .eq('id', imageId);
+        if (error) {
+            alert('删除失败：' + error.message);
+            return;
+        }
+        imagesByRole[roleId] = imagesByRole[roleId].filter(img => img.id !== imageId);
+        renderImagesForCurrentRole();
+        renderRoleList();
+    }
+
+    async function upsertRelation(sourceId, targetId, label) {
+        // 检查是否已存在（无向）
+        const { data: existing, error: findError } = await supabase
+            .from('relations')
+            .select('id')
+            .or(`and(source_id.eq.${sourceId},target_id.eq.${targetId}),and(source_id.eq.${targetId},target_id.eq.${sourceId})`)
+            .maybeSingle();
+        if (findError) {
+            alert('查询关系失败：' + findError.message);
+            return;
+        }
+
+        if (existing) {
+            const { error: updateError } = await supabase
+                .from('relations')
+                .update({ label })
+                .eq('id', existing.id);
+            if (updateError) {
+                alert('更新关系失败：' + updateError.message);
+                return;
+            }
+        } else {
+            const { error: insertError } = await supabase
+                .from('relations')
+                .insert([{ source_id: sourceId, target_id: targetId, label }]);
+            if (insertError) {
+                alert('添加关系失败：' + insertError.message);
+                return;
+            }
+        }
+
+        // 重新加载关系数据
+        const { data: newRelations } = await supabase.from('relations').select('*');
+        relations = newRelations || [];
+        renderGraph();
+    }
+
+    // ==================== 关系图谱 ====================
+    function renderGraph() {
+        const chartDom = document.getElementById('graphChart');
+        if (!chartDom) return;
+        if (echartsInstance) echartsInstance.dispose();
+        echartsInstance = echarts.init(chartDom);
+
+        const nodes = roles.map(role => ({
+            id: role.id,
+            name: role.name,
+            symbolSize: 42,
+            itemStyle: { color: '#3b82f6' }
+        }));
+
+        const links = [];
+        relations.forEach(rel => {
+            const sourceExists = roles.some(r => r.id === rel.source_id);
+            const targetExists = roles.some(r => r.id === rel.target_id);
+            if (sourceExists && targetExists) {
+                links.push({
+                    source: rel.source_id,
+                    target: rel.target_id,
+                    label: { show: true, formatter: rel.label, fontSize: 10, offset: [0, -10] },
+                    lineStyle: { color: '#8b5cf6', width: 2, curveness: 0.2 }
+                });
+            }
+        });
+
+        const option = {
+            tooltip: { trigger: 'item', formatter: (params) => {
+                if (params.dataType === 'node') return `角色：${params.data.name}`;
+                if (params.dataType === 'edge') return `关系：${params.data.label?.formatter || '关联'}`;
+                return '';
+            } },
+            series: [{
+                type: 'graph',
+                layout: 'force',
+                force: { repulsion: 300, edgeLength: 120, gravity: 0.1, friction: 0.2 },
+                roam: true,
+                draggable: true,
+                data: nodes,
+                links: links,
+                label: { show: true, position: 'bottom', fontSize: 12, fontWeight: 'bold', color: '#1f2937' },
+                emphasis: { focus: 'adjacency' },
+                lineStyle: { color: 'source', curveness: 0.3, width: 2 },
+                edgeSymbol: ['none', 'arrow'],
+                edgeSymbolSize: [0, 8],
+                edgeLabel: { fontSize: 10, show: true, formatter: (params) => params.data.label?.formatter || '' }
+            }]
+        };
+        echartsInstance.setOption(option);
+        echartsInstance.on('click', { dataType: 'node' }, (params) => {
+            if (params.data && params.data.id) {
+                selectedRoleId = params.data.id;
+                renderRoleList();
+                renderImagesForCurrentRole();
+                updateRelationSelectors();
+            }
+        });
+    }
+
+    // 更新关系下拉选择器
+    function updateRelationSelectors() {
+        const sourceSelect = document.getElementById('relationSource');
+        const targetSelect = document.getElementById('relationTarget');
+        if (!sourceSelect || !targetSelect) return;
+        sourceSelect.innerHTML = '<option value="">选择角色A</option>';
+        targetSelect.innerHTML = '<option value="">选择角色B</option>';
+        roles.forEach(role => {
+            sourceSelect.innerHTML += `<option value="${role.id}">${escapeHtml(role.name)}</option>`;
+            targetSelect.innerHTML += `<option value="${role.id}">${escapeHtml(role.name)}</option>`;
+        });
+    }
+
+    // ==================== 事件绑定与初始化 ====================
+    function setupEventListeners() {
+        document.getElementById('createRoleBtn').addEventListener('click', async () => {
+            const name = prompt('输入新角色姓名', '新涉案人');
+            if (name && name.trim()) await createRole(name.trim());
+        });
+
+        const uploadBtn = document.getElementById('triggerUploadBtn');
+        const fileInput = document.getElementById('imageUploadInput');
+        uploadBtn.addEventListener('click', () => fileInput.click());
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件');
+                return;
+            }
+            if (!selectedRoleId) {
+                alert('请先选择一个角色');
+                return;
+            }
+            await uploadImage(selectedRoleId, file);
+            fileInput.value = '';
+        });
+
+        document.getElementById('addRelationBtn').addEventListener('click', async () => {
+            const sourceId = parseInt(document.getElementById('relationSource').value);
+            const targetId = parseInt(document.getElementById('relationTarget').value);
+            const label = document.getElementById('relationLabel').value.trim();
+            if (isNaN(sourceId) || isNaN(targetId) || sourceId === targetId) {
+                alert('请选择两个不同的角色');
+                return;
+            }
+            if (!label) {
+                alert('请填写关系描述');
+                return;
+            }
+            await upsertRelation(sourceId, targetId, label);
+            document.getElementById('relationLabel').value = '关联';
+        });
+    }
+
+    // 启动
+    window.addEventListener('DOMContentLoaded', () => {
+        setupEventListeners();
+        loadData();
+    });
+</script>
+</body>
+</html>
