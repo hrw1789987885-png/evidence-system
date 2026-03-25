@@ -408,7 +408,20 @@
     // =======================================================================
 
     // 初始化 Supabase 客户端
-     supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabase;
+try {
+    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    console.log('Supabase 客户端初始化成功');
+} catch (error) {
+    console.error('Supabase 初始化失败：', error);
+    alert('初始化失败，请刷新页面重试。');
+}
+    // 可选的降级处理：禁用所有需要 Supabase 的操作按钮
+    document.querySelectorAll('button, .role-item, .upload-btn').forEach(el => {
+        el.disabled = true;
+        el.style.opacity = '0.5';
+        el.style.pointerEvents = 'none';
+    });
 
     // 全局数据变量
     let roles = [];            // 角色列表
