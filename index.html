@@ -76,6 +76,19 @@
   tr:last-child td { border-bottom: none; }
   tr:hover td { background: #fafafa; }
   .field-checkbox { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+  .switch { position: relative; display: inline-flex; width: 36px; height: 20px; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .switch-slider {
+    position: absolute; inset: 0; cursor: pointer; border-radius: 999px;
+    background: #d1d5db; transition: background 0.2s;
+  }
+  .switch-slider::before {
+    content: ""; position: absolute; width: 16px; height: 16px; left: 2px; top: 2px;
+    background: white; border-radius: 50%; transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+  }
+  .switch input:checked + .switch-slider { background: #3b82f6; }
+  .switch input:checked + .switch-slider::before { transform: translateX(16px); }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #f1f5f9; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -124,7 +137,6 @@
       </div>
       <div class="flex gap-6 mt-2">
         <button class="tab-active pb-2 text-sm" id="tab-list" onclick="switchTab('list')">列表配置</button>
-        <button class="tab-inactive pb-2 text-sm" id="tab-detail" onclick="switchTab('detail')">详情配置</button>
       </div>
     </div>
 
@@ -170,7 +182,7 @@
     </div>
     <div class="px-6 py-5 flex flex-col gap-4">
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">标准件名称 <span class="text-red-500">*</span></label>
+        <label class="block text-sm font-medium text-gray-700 mb-1">列表表单名称 <span class="text-red-500">*</span></label>
         <input type="text" id="newName" class="w-full" placeholder="如：合同管理" />
       </div>
       <div>
@@ -304,23 +316,9 @@ function ensureConfig(id) {
     const activeFields = std.fields.filter(f => f.active);
     configs[id] = {
       listFields: activeFields.map((f, i) => ({
-        key: f.key, label: f.label, visible: true, width: 120,
+        key: f.key, label: f.label, listVisible: false, visible: true, width: 120,
         align: 'left', format: '', order: i, join: f.join || false, joinTable: f.joinTable || ''
       })),
-      detailGroups: [
-        {
-          id: 'g1', name: '基本信息',
-          fields: activeFields.slice(0, Math.ceil(activeFields.length / 2)).map(f => ({
-            key: f.key, label: f.label, visible: true, join: f.join || false
-          }))
-        },
-        {
-          id: 'g2', name: '扩展信息',
-          fields: activeFields.slice(Math.ceil(activeFields.length / 2)).map(f => ({
-            key: f.key, label: f.label, visible: true, join: f.join || false
-          }))
-        }
-      ],
       queryConditions: activeFields.slice(0, 2).map(f => ({
         id: uid(), field: f.key, condType: 'contains', widgetType: 'text', defaultVal: '', required: false
       })),
@@ -381,7 +379,7 @@ function openFieldModal(id, e) {
   const typeTagClass = { string:'tag-string', number:'tag-number', date:'tag-date', enum:'tag-enum' };
 
   body.innerHTML = `
-    <div class="text-xs text-gray-500 mb-3">勾选需要启用的字段，已启用字段将出现在列表配置和详情配置中。</div>
+    <div class="text-xs text-gray-500 mb-3">勾选需要启用的字段，已启用字段将出现在列表配置中。</div>
     <div class="flex flex-col gap-1">
       ${std.fields.map(f => `
         <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer">
@@ -434,7 +432,7 @@ function openNewModal() {
 function confirmNewStandard() {
   const name = document.getElementById('newName').value.trim();
   const table = document.getElementById('newTable').value.trim() || name.toLowerCase().replace(/\s+/g, '_');
-  if (!name) { alert('请输入标准件名称'); return; }
+  if (!name) { alert('请输入列表表单名称'); return; }
   if (standards.find(s => s.name === name)) { alert('名称已存在，请换一个名称'); return; }
   const id = 's' + uid();
   const newStd = {
@@ -463,25 +461,18 @@ function renderWorkspace() {
   const std = getStd(currentId);
   document.getElementById('workspaceTitle').textContent = std.name;
   document.getElementById('workspaceTable').textContent = std.table;
-  document.getElementById('tab-list').className = currentTab === 'list' ? 'tab-active pb-2 text-sm' : 'tab-inactive pb-2 text-sm';
-  document.getElementById('tab-detail').className = currentTab === 'detail' ? 'tab-active pb-2 text-sm' : 'tab-inactive pb-2 text-sm';
+  document.getElementById('tab-list').className = 'tab-active pb-2 text-sm';
 
   const cfg = configs[currentId];
   const content = document.getElementById('workspaceContent');
 
-  if (currentTab === 'list') {
-    content.innerHTML = renderListTab(std, cfg);
-    initDragSort();
-  } else {
-    content.innerHTML = renderDetailTab(std, cfg);
-  }
-  if (currentTab === 'list') {
-    content.innerHTML += renderActionButtons(cfg);
-  }
+  content.innerHTML = renderListTab(std, cfg);
+  initDragSort();
+  content.innerHTML += renderActionButtons(cfg);
 }
 
 function switchTab(tab) {
-  currentTab = tab;
+  currentTab = 'list';
   renderWorkspace();
 }
 
@@ -493,6 +484,13 @@ function renderListTab(std, cfg) {
     <tr id="row_${f.key}" draggable="true" ondragstart="dragStart(event,'${f.key}')"
         ondragover="dragOver(event)" ondrop="dropRow(event,'${f.key}')" ondragleave="dragLeave(event)">
       <td class="drag-handle text-gray-300 text-lg px-2">⠿</td>
+      <td class="text-center">
+        <label class="switch" title="列表展示">
+          <input type="checkbox" ${f.listVisible ? 'checked' : ''}
+                 onchange="listFieldChange('${f.key}','listVisible',this.checked)" />
+          <span class="switch-slider"></span>
+        </label>
+      </td>
       <td class="font-medium text-gray-700">${f.label}</td>
       <td><span class="text-xs text-gray-400">${f.key}</span></td>
       <td><input type="text" value="${f.label}" style="width:90px"
@@ -513,6 +511,7 @@ function renderListTab(std, cfg) {
         <table class="w-full" id="listFieldTable">
           <thead><tr>
             <th style="width:32px"></th>
+            <th style="width:74px">列表展示</th>
             <th>字段名</th>
             <th>Key</th>
             <th>列标题</th>
@@ -583,59 +582,6 @@ function renderQueryRows() {
       <td><button class="btn-danger" onclick="removeQueryCond('${c.id}')">删除</button></td>
     </tr>
   `).join('');
-}
-
-// ============================================================
-// 详情配置 Tab
-// ============================================================
-function renderDetailTab(std, cfg) {
-  const groups = cfg.detailGroups.map((g, gi) => `
-    <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
-      <div class="bg-gray-50 px-4 py-2.5 flex items-center justify-between border-b border-gray-200">
-        <div class="flex items-center gap-2">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="#6b7280">
-            <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z"/>
-          </svg>
-          <input type="text" value="${g.name}" style="width:120px;background:transparent;border:none;font-weight:600;font-size:14px;color:#1e293b;padding:0"
-                 onchange="renameGroup('${g.id}',this.value)" onfocus="this.style.border='1px solid #d1d5db';this.style.borderRadius='4px';this.style.padding='2px 6px'"
-                 onblur="this.style.border='none';this.style.padding='0'" />
-        </div>
-        <div class="flex items-center gap-3">
-          <button class="text-xs text-blue-500 hover:text-blue-700" onclick="openJoinModal('detail','${g.id}')">编辑</button>
-          <button class="text-xs text-red-400 hover:text-red-600" onclick="removeGroup('${g.id}')">删除分组</button>
-        </div>
-      </div>
-      <div class="p-4 grid grid-cols-3 gap-x-3 gap-y-2">
-        ${g.fields.map(f => `
-          <div class="flex items-center gap-1.5 px-1.5 py-1.5 rounded hover:bg-gray-50">
-            <label class="flex items-center gap-1.5 min-w-0 cursor-pointer">
-              <input type="checkbox" class="field-checkbox shrink-0" ${f.visible?'checked':''}
-                     onchange="detailFieldChange('${g.id}','${f.key}',this.checked)" />
-              <span class="text-sm text-gray-700 truncate w-20">${f.label}</span>
-              ${f.join ? '<span class="tag-text tag-join shrink-0">联表</span>' : ''}
-            </label>
-            <input type="text" value="${f.label}" class="w-24"
-                   onchange="detailFieldLabelChange('${g.id}','${f.key}',this.value)" />
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `).join('');
-
-  return `
-    <div class="section-card">
-      <div class="section-header">
-        <span class="section-title">📄 详情展示字段</span>
-        <button class="btn-add text-sm" onclick="addDetailGroup()">
-          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
-          添加分组
-        </button>
-      </div>
-      <div class="p-4" id="detailGroupsContainer">
-        ${groups || '<p class="text-sm text-gray-400 text-center py-6">暂无分组，点击「添加分组」创建</p>'}
-      </div>
-    </div>
-  `;
 }
 
 // ============================================================
@@ -715,42 +661,6 @@ function addQueryCondition() {
   if (tbody) tbody.innerHTML = renderQueryRows();
 }
 
-function detailFieldChange(groupId, fieldKey, visible) {
-  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
-  if (g) {
-    const f = g.fields.find(f => f.key === fieldKey);
-    if (f) f.visible = visible;
-  }
-}
-
-function detailFieldLabelChange(groupId, fieldKey, label) {
-  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
-  if (g) {
-    const f = g.fields.find(f => f.key === fieldKey);
-    if (f) f.label = label.trim() || f.label;
-  }
-}
-
-function renameGroup(groupId, name) {
-  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
-  if (g) g.name = name;
-}
-
-function removeGroup(groupId) {
-  configs[currentId].detailGroups = configs[currentId].detailGroups.filter(g => g.id !== groupId);
-  renderWorkspace();
-}
-
-function addDetailGroup() {
-  const std = getStd(currentId);
-  const activeFields = std.fields.filter(f => f.active);
-  configs[currentId].detailGroups.push({
-    id: uid(), name: '新分组',
-    fields: activeFields.map(f => ({ key: f.key, label: f.label, visible: false, join: f.join || false }))
-  });
-  renderWorkspace();
-}
-
 function actionBtnChange(id, prop, val) {
   const b = configs[currentId].actionButtons.find(b => b.id === id);
   if (b) b[prop] = val;
@@ -772,10 +682,7 @@ function addActionButton() {
 // ============================================================
 // 联表字段弹窗
 // ============================================================
-let joinModalContext = { type: 'list', groupId: null };
-
-function openJoinModal(type = 'list', groupId = null) {
-  joinModalContext = { type, groupId };
+function openJoinModal() {
   const select = document.getElementById('joinTable');
   select.innerHTML = standards.map(s => `<option value="${s.id}">${s.table}（${s.name}）</option>`).join('');
   select.value = currentId;
@@ -791,12 +698,7 @@ function renderJoinFieldOptions() {
   const selectedId = document.getElementById('joinTable').value;
   const selectedStd = getStd(selectedId);
   const cfg = configs[currentId];
-  const targetGroup = joinModalContext.type === 'detail'
-    ? cfg.detailGroups.find(g => g.id === joinModalContext.groupId)
-    : null;
-  const checkedKeys = new Set(
-    targetGroup ? targetGroup.fields.filter(f => f.visible).map(f => f.key) : cfg.listFields.map(f => f.key)
-  );
+  const checkedKeys = new Set(cfg.listFields.map(f => f.key));
   const rows = selectedStd.fields.map(f => {
     const key = selectedId === currentId ? f.key : joinFieldKey(selectedStd.table, f.key);
     const checked = checkedKeys.has(key) ? 'checked' : '';
@@ -831,37 +733,6 @@ function confirmJoinField() {
   const checkedFields = Array.from(document.querySelectorAll('.join-field-checkbox:checked')).map(el => el.value);
   if (!checkedFields.length) { alert('请至少勾选一个字段'); return; }
 
-  if (joinModalContext.type === 'detail') {
-    const group = configs[currentId].detailGroups.find(g => g.id === joinModalContext.groupId);
-    if (!group) return;
-    const selectedKeys = new Set(selectedStd.fields.map(field => {
-      const normalized = normalizeSelectedField(selectedStd, field, selectedId);
-      return normalized.key;
-    }));
-    group.fields = group.fields.filter(f => !selectedKeys.has(f.key));
-
-    checkedFields.forEach(fieldKey => {
-      const field = selectedStd.fields.find(f => f.key === fieldKey);
-      if (!field) return;
-      const normalized = normalizeSelectedField(selectedStd, field, selectedId);
-      if (!std.fields.some(f => f.key === normalized.key)) {
-        std.fields.push({ ...normalized, active: true });
-      }
-      group.fields.push({
-        key: normalized.key,
-        label: normalized.label,
-        visible: true,
-        join: normalized.join,
-        joinTable: normalized.joinTable
-      });
-    });
-
-    closeModal('joinModal');
-    renderWorkspace();
-    showToast('分组展示字段已更新');
-    return;
-  }
-
   let addedCount = 0;
   checkedFields.forEach(fieldKey => {
     const field = selectedStd.fields.find(f => f.key === fieldKey);
@@ -877,7 +748,7 @@ function confirmJoinField() {
       });
     }
     configs[currentId].listFields.push({
-      key, label: normalized.label, visible: true, width: 120, align: 'left', format: '',
+      key, label: normalized.label, listVisible: false, visible: true, width: 120, align: 'left', format: '',
       order: configs[currentId].listFields.length, join: normalized.join,
       joinTable: normalized.joinTable
     });
