@@ -1,1668 +1,981 @@
-﻿<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>数字监管系统（合并）</title>
-  <style>
-    :root{
-      --header-h:60px;--sidebar-w:260px;--blue:#1788e8;--blue2:#2494f0;--bg:#eff3f8;--panel:#fff;--line:#d9e3ef;--text:#27384b;--sub:#62758b;--muted:#8ea0b1;--shadow:0 10px 26px rgba(45,76,112,.08);--radius:14px;
-    }
-    *{box-sizing:border-box} html,body{width:100%;height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--text);font-family:"Microsoft YaHei","PingFang SC",sans-serif} body{min-width:1440px} #app{height:100%}
-    .layout{height:100vh;overflow:hidden}
-    .header{position:fixed;top:0;left:0;right:0;z-index:20;height:var(--header-h);display:flex;align-items:center;justify-content:space-between;padding:0 18px;background:linear-gradient(90deg,var(--blue),var(--blue2));color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-    .brand,.nav,.tools,.menu-left{display:flex;align-items:center}.brand{min-width:260px;gap:10px}.logo{width:22px;height:22px;border-radius:4px;background:rgba(255,255,255,.95);position:relative}.logo:after{content:"";position:absolute;inset:5px 4px;border-radius:2px;background:linear-gradient(180deg,#64b7ff,#1d86e5);clip-path:polygon(0 100%,0 65%,28% 42%,48% 58%,72% 18%,100% 0,100% 100%)}.brand-text{font-size:18px;font-weight:700}.nav{gap:8px;margin-left:34px;flex:1}.nav-item{position:relative;height:var(--header-h);padding:0 22px;display:inline-flex;align-items:center;font-size:14px}.nav-item.active:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:#fff}.tools{gap:14px}.search{width:242px;height:32px;padding:0 14px;border:none;border-radius:8px;outline:none;color:#fff;background:rgba(255,255,255,.18)}.search::placeholder{color:rgba(255,255,255,.78)}.message-remind{position:relative;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.16);font-size:15px;cursor:pointer}.message-remind:after{content:"3";position:absolute;right:-5px;top:-5px;min-width:16px;height:16px;padding:0 4px;border-radius:999px;background:#ff4d4f;color:#fff;font-size:11px;line-height:16px;text-align:center;box-shadow:0 0 0 2px #1788e8}.message-popover{position:fixed;top:76px;right:38px;z-index:80;width:360px;background:#fff;border:1px solid #d9e6f2;border-radius:16px;box-shadow:0 18px 42px rgba(22,68,112,.18);display:none;overflow:hidden}.message-popover.show{display:block}.message-popover:before{content:"";position:absolute;top:-8px;right:62px;width:16px;height:16px;background:#fff;border-left:1px solid #d9e6f2;border-top:1px solid #d9e6f2;transform:rotate(45deg)}.message-head{padding:14px 16px;border-bottom:1px solid #edf2f7;display:flex;justify-content:space-between;align-items:center}.message-title{font-size:16px;font-weight:700;color:#274560}.message-clear{font-size:12px;color:#1688e8;cursor:pointer}.message-list{padding:10px 12px;display:grid;gap:10px}.message-item{display:grid;grid-template-columns:36px 1fr;gap:10px;padding:12px;border:1px solid #e6eef6;border-radius:12px;background:#fbfdff}.message-icon{width:36px;height:36px;border-radius:10px;background:#eaf4ff;color:#1688e8;display:grid;place-items:center;font-weight:700}.message-main{display:grid;gap:5px}.message-row{display:flex;justify-content:space-between;gap:10px}.message-name{font-weight:700;color:#2d4762}.message-count{color:#ff4d4f;font-weight:700}.message-desc{font-size:12px;color:#6d8296;line-height:1.6}.message-foot{padding:10px 16px;border-top:1px solid #edf2f7;text-align:center;color:#1688e8;font-size:13px;cursor:pointer;background:#f8fbff}
-    .sidebar{position:fixed;top:var(--header-h);left:0;width:var(--sidebar-w);height:calc(100vh - var(--header-h));background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;overflow:hidden}.sidebar-head{padding:18px 18px 14px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between}.sidebar-head-title{display:flex;align-items:center;gap:10px;font-size:18px;font-weight:700;color:#24405a}.sidebar-head-title:before{content:"";width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#58c0ff,#0f87ee);box-shadow:0 0 0 4px rgba(21,148,246,.12)}.collapse-btn{width:32px;height:32px;border:1px solid var(--line);border-radius:10px;background:#f7fbff;color:#5d7590}.menu{padding:12px;overflow:auto}.menu-panel{background:rgba(245,250,255,.85);border:1px solid #e4eef6;border-radius:16px;padding:10px}.menu-group + .menu-group{margin-top:8px}.menu-item,.tree-item,.tree-subitem{width:100%;border:0;background:transparent;border-radius:12px;color:#32475b;cursor:pointer}.menu-item,.tree-item{min-height:52px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;font-size:15px}.menu-item.active,.tree-item.active{color:#166fc2;background:linear-gradient(180deg,#eef7ff,#e6f3ff)}.tree-item-left{display:flex;align-items:center;gap:12px;font-weight:700}.tree-arrow{font-size:14px;color:#7b93ab;transition:transform .2s ease}.menu-group.expanded .tree-arrow{transform:rotate(90deg)}.tree-sublist{display:none;padding:6px 0 4px 38px}.menu-group.expanded .tree-sublist{display:grid;gap:6px}.tree-subitem{padding:10px 12px;text-align:left;font-size:14px;color:#60768d}.tree-subitem.current{background:#eaf4ff;color:#166fc2;font-weight:700}.menu-left{gap:12px}.menu-icon{width:20px;text-align:center}.menu-foot{height:48px;display:flex;align-items:center;justify-content:center;border-top:1px solid #eef2f6;color:#405367}
-    .main{position:fixed;top:var(--header-h);left:var(--sidebar-w);width:calc(100vw - var(--sidebar-w));height:calc(100vh - var(--header-h));overflow-y:auto;overflow-x:hidden;padding:16px;background:#f2f5f9}.shell{min-height:100%;padding:16px;border:1px solid #e0e8f1;background:#f7f9fc}.dashboard{display:grid;gap:16px}
-    .view{display:none}.view.active{display:block}
-    .banner{padding:12px 18px;border:1px solid #d8e7f8;border-radius:16px;background:radial-gradient(circle at 78% 18%,rgba(255,255,255,.35),transparent 30%),linear-gradient(90deg,#1788e8,#4da8ef);color:#fff;box-shadow:0 12px 28px rgba(30,122,194,.16)}.banner-top{display:flex;justify-content:space-between;align-items:center;gap:16px}.banner-title{font-size:22px;font-weight:700}.banner-time{text-align:right;font-size:13px;line-height:1.4}
-    .panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}.panel-body{padding:16px 18px 18px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}.panel-head-left{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.panel-title{font-size:18px;font-weight:700}.panel-tools{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.filter,.pill,.sort-mark,.nav-item,.menu-item,.legend-row{cursor:pointer}.chip-select{height:32px;padding:0 12px;border-radius:8px;display:inline-flex;align-items:center;font-size:13px;border:1px solid #d5e5f7;background:#f4f9ff;color:#166fc2;outline:none}
-    .overview{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(300px,.72fr);gap:14px}.cards-scroll{max-height:356px;overflow:auto;padding-right:4px}.cards-scroll::-webkit-scrollbar{width:8px}.cards-scroll::-webkit-scrollbar-thumb{background:#c7d8ea;border-radius:999px}.cards-scroll::-webkit-scrollbar-track{background:#eef4fa;border-radius:999px}.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.card{min-height:172px;padding:14px;border:1px solid #e4edf6;border-radius:12px;background:linear-gradient(180deg,#fbfdff,#f7fbff);display:flex;flex-direction:column}.card-title{margin-bottom:10px;font-size:16px;font-weight:700;color:#31597e}.list{display:grid;gap:10px;max-height:118px;overflow:auto;padding-right:4px}.list::-webkit-scrollbar{width:6px}.list::-webkit-scrollbar-thumb{background:#cfdeed;border-radius:999px}.list::-webkit-scrollbar-track{background:#eff5fb;border-radius:999px}.item{display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--sub)}.item strong{font-size:14px;color:var(--text)}.item-main{display:flex;align-items:center;gap:8px;min-width:0;flex:1}.item-main span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.item-action{color:#1676cd;font-size:12px;cursor:pointer;white-space:nowrap}
-    .trend-card{min-height:356px;padding:14px;border:1px solid #e4edf6;border-radius:12px;background:linear-gradient(180deg,#fbfdff,#f7fbff)}
-    .trend-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
-    .trend-title{font-size:16px;font-weight:700;color:#31597e}
-    .trend-range{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .trend-badge{padding:4px 10px;border-radius:999px;background:#eef6ff;color:#166fc2;font-size:12px;cursor:pointer;border:1px solid transparent}
-    .trend-badge.active{background:#166fc2;color:#fff;border-color:#166fc2}
-    .trend-svg{width:100%;height:220px;display:block}
-    .trend-axis{font-size:11px;fill:#8ea0b1}
-    .trend-line{fill:none;stroke:#1f86e5;stroke-width:3}
-    .trend-area{fill:url(#trendFill)}
-    .trend-point{fill:#fff;stroke:#1f86e5;stroke-width:2}
-    .trend-grid{stroke:#e4edf6;stroke-width:1}
-    .trend-note{display:grid;gap:8px;margin-top:10px;font-size:13px;color:#61758b;line-height:1.7}
-    .track{height:10px;border-radius:999px;overflow:hidden;background:#e8eff7}.fill{height:100%;background:linear-gradient(90deg,#48adff,#1a87e5)}
-    table{width:100%;border-collapse:collapse;font-size:13px} th,td{padding:12px 10px;border-bottom:1px solid #eaf0f6;text-align:left;white-space:nowrap} th{position:sticky;top:0;z-index:2;color:var(--sub);font-weight:600;background:#f8fbff;box-shadow:0 1px 0 #eaf0f6} tr:last-child td{border-bottom:none}.strong-row td{font-weight:700;color:#2a4865;background:#fbfdff}.barrow{display:flex;align-items:center;gap:10px;min-width:250px}.barrow .track{flex:1}
-    .scroll-wrap{max-height:260px;overflow:auto;padding-right:4px}
-    .scroll-wrap::-webkit-scrollbar{width:8px;height:8px}
-    .scroll-wrap::-webkit-scrollbar-thumb{background:#c7d8ea;border-radius:999px}
-    .scroll-wrap::-webkit-scrollbar-track{background:#eef4fa;border-radius:999px}
-    .th-filter{display:inline-flex;align-items:center;gap:6px}
-    .sort-mark{display:inline-grid;gap:2px;justify-items:center;line-height:1}
-    .sort-mark i{display:block;width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent}
-    .sort-mark .up{border-bottom:6px solid #88a6c5}
-    .sort-mark .down{border-top:6px solid #88a6c5}
-    .sort-mark.active-up .up{border-bottom-color:#1676cd}
-    .sort-mark.active-up .down{border-top-color:#c9d8e8}
-    .sort-mark.active-down .up{border-bottom-color:#c9d8e8}
-    .sort-mark.active-down .down{border-top-color:#1676cd}
-    .pair-head{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.85fr);gap:16px;align-items:end}
-    .pair-title{font-size:18px;font-weight:700}
-    .pair-grid{display:grid;grid-template-columns:minmax(0,1.7fr) minmax(320px,.85fr);gap:16px}
-    .device-table th,.device-table td{text-align:center}
-    .device-table th:first-child,.device-table td:first-child{text-align:left}
-    .note{margin-top:12px;padding:12px 14px;border-radius:12px;background:#f8fbff;border:1px dashed #d8e5f3;font-size:13px;color:#5d7388;line-height:1.7}
-    .split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.92fr);gap:16px}.split-wide{grid-template-columns:minmax(0,1.24fr) minmax(0,.76fr)}.top-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.filter{height:30px;padding:0 10px;border:1px solid #d7e6f6;border-radius:8px;background:#f7fbff;font-size:13px;color:#58708a;display:inline-flex;align-items:center}.filter-input{width:140px;justify-content:flex-start}.filter.active{border-color:#acd0f7;background:#eaf4ff;color:#166fc2}.range-group{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.date-input{height:30px;padding:0 10px;border:1px solid #d7e6f6;border-radius:8px;background:#f7fbff;font-size:13px;color:#58708a}.action-btn{height:30px;padding:0 12px;border:1px solid #d7e6f6;border-radius:8px;background:#1676cd;color:#fff;font-size:13px;cursor:pointer}.action-btn.secondary{background:#fff;color:#58708a}.top-head,.top-row{display:grid;grid-template-columns:54px 72px minmax(0,1.35fr) 82px 128px;gap:10px;align-items:center}.top-head{position:sticky;top:0;z-index:2;padding:10px 2px;background:#f8fbff;font-size:13px;color:var(--sub);box-shadow:0 1px 0 #eaf0f6}.top-list{display:grid;gap:12px}.top-row{padding:10px 12px;border:1px solid #e5edf6;border-radius:12px;background:#fbfdff;font-size:13px}.top-row strong{font-size:14px}.toggle{display:flex;align-items:center;gap:8px;margin-bottom:12px;font-size:13px;color:#5c7188}.pill{padding:6px 12px;border-radius:999px;border:1px solid #d7e6f6;background:#f7fbff;color:#4d7297}.pill.active{border-color:#acd0f7;background:#eaf4ff;color:#166fc2;font-weight:700}.class-box{padding:14px;border:1px solid #e5edf6;border-radius:12px;background:#fbfdff}.class-head{display:grid;gap:6px;margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid #e9eff6;font-size:13px;color:var(--sub)}.pie-layout{display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:center}.pie-chart{width:180px;height:180px;border-radius:50%;background:conic-gradient(var(--pie-stops, #2b8ef0 0 40%, #53b57f 40% 65%, #f2b24d 65% 84%, #7c9cff 84% 97%, #d7dee8 97% 100%));position:relative;margin:0 auto}.pie-chart:after{content:"";position:absolute;inset:38px;border-radius:50%;background:#fbfdff;box-shadow:inset 0 0 0 1px #e7eef6}.pie-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;color:#67809a;text-align:center;z-index:1}.pie-center strong{font-size:22px;color:#2c4865}.pie-legend{display:grid;gap:12px}.legend-row{display:grid;grid-template-columns:12px 72px 52px 1fr;gap:10px;align-items:center;font-size:13px;color:var(--sub)}.legend-dot{width:12px;height:12px;border-radius:50%}.legend-row strong{color:var(--text)}.muted{color:var(--muted)}
-    .dispatch-shell{display:grid;gap:16px}.crumbs{font-size:13px;color:#6f8598}.dispatch-tabs{display:none}.board{background:#fff;border:1px solid #d9e6f2;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.board-head{padding:16px 18px;border-bottom:1px solid #e7eef5;display:flex;align-items:center;justify-content:space-between;gap:12px}.board-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#274560}.title-mark{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#58c0ff,#0f87ee)}.toolbar{padding:14px 18px;border-bottom:1px solid #eef3f8;background:#fbfdff;display:grid;gap:12px}.filter-row,.search-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.field-wrap,.search-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.filter-label,.search-label{font-size:13px;color:#6c8195}.fake-select,.search-input{height:34px;padding:0 12px;border:1px solid #dbe8f4;border-radius:10px;background:#fff;font-size:13px;color:#47627d;display:inline-flex;align-items:center;min-width:160px}.search-input{min-width:260px}.action-group{display:flex;gap:8px}.btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid #d8e5f2;background:#fff;color:#58708a;font-size:13px;cursor:pointer}.btn.primary{background:#1688e8;color:#fff;border-color:#1688e8}.table-wrap{max-height:460px;overflow:auto;padding:0 18px 8px}.table-wrap::-webkit-scrollbar{width:8px;height:8px}.table-wrap::-webkit-scrollbar-thumb{background:#c7d8ea;border-radius:999px}.table-footer{padding:14px 18px;border-top:1px solid #eef3f8;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#6c8195;font-size:13px}.pagination{display:flex;gap:8px}.page-btn{width:30px;height:30px;border:1px solid #dbe8f4;border-radius:8px;display:grid;place-items:center;background:#fff}.page-btn.current{background:#1688e8;color:#fff;border-color:#1688e8}.dispatch-detail{padding:16px 18px;border-top:1px solid #eef3f8;background:#fbfdff;display:grid;gap:12px}.dispatch-info-block{padding:14px;border:1px solid #e4edf6;border-radius:12px;background:#fff}.dispatch-info-block h4{margin:0 0 10px;font-size:15px;color:#274560}.dispatch-info-block p,.dispatch-info-block li{margin:0;font-size:13px;color:#667b91;line-height:1.8}.dispatch-info-block ul{margin:0;padding-left:18px}.status-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px}.status-chip.done{background:#eaf7ee;color:#2d8a53}.status-chip.pending{background:#fff6e8;color:#c07d16}.status-chip.process{background:#eef6ff;color:#146fcb}.severity-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px}.severity-chip.high{background:#ffeaea;color:#cf4545}.severity-chip.medium{background:#fff5e7;color:#b5791a}.severity-chip.low{background:#eef6ff;color:#2b7dcb}.dispatch-actions{display:flex;gap:8px;flex-wrap:wrap}.dispatch-link{color:#1688e8;cursor:pointer}.stats-panel{padding:18px;border:1px solid #e4edf6;border-radius:14px;background:#fff}.stats-subtitle,.record-title{margin:0 0 10px;font-size:15px;font-weight:700;color:#274560}.stats-table{display:grid;gap:10px}.stats-table-row{display:grid;grid-template-columns:1fr .8fr .8fr .8fr 1.4fr;gap:12px;align-items:center;padding:10px 12px;border:1px solid #e8eef5;border-radius:12px;background:#fbfdff;font-size:13px;color:#5b7289}.stats-table-head{font-weight:700;color:#33516d;background:#f5faff}.progress-line,.chart-bar-row{display:flex;align-items:center;gap:10px}.progress-bar{color:#1688e8;font-weight:700}.donut-wrap{display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:center}.donut-chart{width:180px;height:180px;border-radius:50%;background:conic-gradient(#2b8ef0 0 58%, #dce7f3 58% 100%);position:relative;margin:0 auto}.donut-chart:after{content:"";position:absolute;inset:34px;border-radius:50%;background:#fff}.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;color:#6d8498;font-size:13px}.donut-center strong{font-size:24px;color:#264661}.legend-list{display:grid;gap:12px}.legend-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #e8eef5;border-radius:10px;background:#fbfdff}.legend-left{display:flex;align-items:center;gap:10px}.legend-dot{width:12px;height:12px;border-radius:50%;background:#2b8ef0}.legend-dot.pending{background:#dce7f3}.chart-bars{display:grid;gap:12px}.chart-bar-row{display:grid;grid-template-columns:92px 1fr 140px;gap:12px}.chart-track{height:10px;border-radius:999px;background:#e7eff8;overflow:hidden}.chart-fill{height:100%;background:linear-gradient(90deg,#41afff,#1688e8)}.summary-list{display:grid;gap:10px;font-size:14px;color:#5d7388;line-height:1.8}.query-grid{display:grid;gap:12px}.query-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#5d7388;font-size:13px}.input-fake,.select-fake{height:34px;padding:0 12px;border:1px solid #dbe8f4;border-radius:10px;background:#fff;display:inline-flex;align-items:center;min-width:150px;color:#47627d}.detail-section-title{font-size:15px;font-weight:700;color:#274560}.detail-box{padding:16px;border:1px solid #e4edf6;border-radius:14px;background:#fff}.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;font-size:13px;color:#61758b}.info-grid .full{grid-column:1/-1}.flow-list,.form-grid{display:grid;gap:12px}.flow-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #e8eef5;border-radius:10px;background:#fbfdff;font-size:13px;color:#60758a}.flow-right{display:flex;align-items:center;gap:10px}.attach-link,.delete-link{color:#1688e8;cursor:pointer}.status-tag{padding:4px 10px;border-radius:999px;background:#eef6ff;color:#146fcb}.radio-row,.upload-row,.submit-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.radio-item{display:inline-flex;align-items:center;gap:6px;color:#5d7388}.radio-dot{width:14px;height:14px;border:2px solid #9fb7d0;border-radius:50%}.text-area-fake{min-height:96px;padding:12px;border:1px dashed #c9dbed;border-radius:12px;background:#fbfdff;color:#8ba0b4}.upload-chip{padding:8px 12px;border-radius:10px;border:1px solid #dbe8f4;background:#f7fbff;color:#4b6a87}.file-line{font-size:13px;color:#60758a}.dispatch-empty{padding:24px 18px;color:#7d92a6;font-size:14px}.modal-mask{position:fixed;inset:0;background:rgba(26,40,58,.38);display:none;align-items:center;justify-content:center;z-index:120}.modal-mask.show{display:flex}.modal-card{width:min(920px,calc(100vw - 48px));max-height:calc(100vh - 64px);overflow:auto;border-radius:20px;background:#fff;box-shadow:0 20px 56px rgba(17,55,94,.22);border:1px solid #dbe7f3}.modal-head{padding:16px 18px;border-bottom:1px solid #e8eef5;display:flex;align-items:center;justify-content:space-between;font-size:18px;font-weight:700;color:#274560}.modal-close{width:30px;height:30px;border-radius:50%;border:1px solid #dbe8f4;background:#f7fbff;color:#5a748f;cursor:pointer}.modal-body{padding:18px}.modal-form-box{padding:16px;border:1px solid #e4edf6;border-radius:14px;background:#fbfdff}.modal-grid{display:grid;gap:14px}.form-row{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center}.form-row.top{align-items:start}.form-label{color:#61758b;font-size:13px}.form-value-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.field-tip{font-size:12px;color:#8da0b3}.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}.summary-box,.flow-table-row{padding:12px;border:1px solid #e8eef5;border-radius:10px;background:#fff;font-size:13px;color:#60758a}.flow-table{display:grid;gap:8px}.flow-table-row{display:grid;grid-template-columns:1.2fr .8fr 1fr .7fr}.flow-table-head{font-weight:700;background:#f4f9ff;color:#33516d}.score-block,.score-item{display:grid;gap:10px}.score-options{display:grid;gap:8px}
-    .dispatch-shell{display:grid;gap:16px}.crumbs{font-size:13px;color:#6f8598}.dispatch-tabs{display:none}.board{background:#fff;border:1px solid #d9e6f2;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.board-head{padding:16px 18px;border-bottom:1px solid #e7eef5;display:flex;align-items:center;justify-content:space-between;gap:12px}.board-title{display:flex;align-items:center;gap:10px;font-size:20px;font-weight:700;color:#274560}.title-mark{width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#58c0ff,#0f87ee)}.toolbar{padding:14px 18px;border-bottom:1px solid #eef3f8;background:#fbfdff;display:grid;gap:12px}.filter-row,.search-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.field-wrap,.search-wrap{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.filter-label,.search-label{font-size:13px;color:#6c8195}.fake-select,.search-input{height:34px;padding:0 12px;border:1px solid #dbe8f4;border-radius:10px;background:#fff;font-size:13px;color:#47627d;display:inline-flex;align-items:center;min-width:160px}.search-input{min-width:260px}.action-group{display:flex;gap:8px}.btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid #d8e5f2;background:#fff;color:#58708a;font-size:13px;cursor:pointer}.btn.primary{background:#1688e8;color:#fff;border-color:#1688e8}.table-wrap{max-height:460px;overflow:auto;padding:0 18px 8px}.table-wrap::-webkit-scrollbar{width:8px;height:8px}.table-wrap::-webkit-scrollbar-thumb{background:#c7d8ea;border-radius:999px}.table-footer{padding:14px 18px;border-top:1px solid #eef3f8;display:flex;align-items:center;justify-content:space-between;gap:12px;color:#6c8195;font-size:13px}.pagination{display:flex;gap:8px}.page-btn{width:30px;height:30px;border:1px solid #dbe8f4;border-radius:8px;display:grid;place-items:center;background:#fff}.page-btn.current{background:#1688e8;color:#fff;border-color:#1688e8}.dispatch-detail{padding:16px 18px;border-top:1px solid #eef3f8;background:#fbfdff;display:grid;gap:12px}.dispatch-info-block{padding:14px;border:1px solid #e4edf6;border-radius:12px;background:#fff}.dispatch-info-block h4{margin:0 0 10px;font-size:15px;color:#274560}.dispatch-info-block p,.dispatch-info-block li{margin:0;font-size:13px;color:#667b91;line-height:1.8}.dispatch-info-block ul{margin:0;padding-left:18px}.status-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px}.status-chip.done{background:#eaf7ee;color:#2d8a53}.status-chip.pending{background:#fff6e8;color:#c07d16}.status-chip.process{background:#eef6ff;color:#146fcb}.severity-chip{display:inline-flex;align-items:center;padding:4px 10px;border-radius:999px;font-size:12px}.severity-chip.high{background:#ffeaea;color:#cf4545}.severity-chip.medium{background:#fff5e7;color:#b5791a}.severity-chip.low{background:#eef6ff;color:#2b7dcb}.dispatch-actions{display:flex;gap:8px;flex-wrap:wrap}.dispatch-link{color:#1688e8;cursor:pointer}.stats-panel{padding:18px;border:1px solid #e4edf6;border-radius:14px;background:#fff}.stats-subtitle,.record-title{margin:0 0 10px;font-size:15px;font-weight:700;color:#274560}.stats-table{display:grid;gap:10px}.stats-table-row{display:grid;grid-template-columns:1fr .8fr .8fr .8fr 1.4fr;gap:12px;align-items:center;padding:10px 12px;border:1px solid #e8eef5;border-radius:12px;background:#fbfdff;font-size:13px;color:#5b7289}.stats-table-head{font-weight:700;color:#33516d;background:#f5faff}.progress-line,.chart-bar-row{display:flex;align-items:center;gap:10px}.progress-bar{color:#1688e8;font-weight:700}.donut-wrap{display:grid;grid-template-columns:180px 1fr;gap:18px;align-items:center}.donut-chart{width:180px;height:180px;border-radius:50%;background:conic-gradient(#2b8ef0 0 58%, #dce7f3 58% 100%);position:relative;margin:0 auto}.donut-chart:after{content:"";position:absolute;inset:34px;border-radius:50%;background:#fff}.donut-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1;color:#6d8498;font-size:13px}.donut-center strong{font-size:24px;color:#264661}.legend-list{display:grid;gap:12px}.legend-item{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border:1px solid #e8eef5;border-radius:10px;background:#fbfdff}.legend-left{display:flex;align-items:center;gap:10px}.legend-dot{width:12px;height:12px;border-radius:50%;background:#2b8ef0}.legend-dot.pending{background:#dce7f3}.chart-bars{display:grid;gap:12px}.chart-bar-row{display:grid;grid-template-columns:92px 1fr 140px;gap:12px}.chart-track{height:10px;border-radius:999px;background:#e7eff8;overflow:hidden}.chart-fill{height:100%;background:linear-gradient(90deg,#41afff,#1688e8)}.summary-list{display:grid;gap:10px;font-size:14px;color:#5d7388;line-height:1.8}.query-grid{display:grid;gap:12px}.query-line{display:flex;align-items:center;gap:10px;flex-wrap:wrap;color:#5d7388;font-size:13px}.input-fake,.select-fake{height:34px;padding:0 12px;border:1px solid #dbe8f4;border-radius:10px;background:#fff;display:inline-flex;align-items:center;min-width:150px;color:#47627d}.detail-section-title{font-size:15px;font-weight:700;color:#274560}.detail-box{padding:16px;border:1px solid #e4edf6;border-radius:14px;background:#fff}.info-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;font-size:13px;color:#61758b}.info-grid .full{grid-column:1/-1}.flow-list,.form-grid{display:grid;gap:12px}.flow-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid #e8eef5;border-radius:10px;background:#fbfdff;font-size:13px;color:#60758a}.flow-right{display:flex;align-items:center;gap:10px}.attach-link,.delete-link{color:#1688e8;cursor:pointer}.status-tag{padding:4px 10px;border-radius:999px;background:#eef6ff;color:#146fcb}.radio-row,.upload-row,.submit-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.radio-item{display:inline-flex;align-items:center;gap:6px;color:#5d7388}.radio-dot{width:14px;height:14px;border:2px solid #9fb7d0;border-radius:50%}.text-area-fake{min-height:96px;padding:12px;border:1px dashed #c9dbed;border-radius:12px;background:#fbfdff;color:#8ba0b4}.upload-chip{padding:8px 12px;border-radius:10px;border:1px solid #dbe8f4;background:#f7fbff;color:#4b6a87}.file-line{font-size:13px;color:#60758a}.dispatch-empty{padding:24px 18px;color:#7d92a6;font-size:14px}.modal-mask{position:fixed;inset:0;background:rgba(26,40,58,.38);display:none;align-items:center;justify-content:center;z-index:120}.modal-mask.show{display:flex}.modal-card{width:min(920px,calc(100vw - 48px));max-height:calc(100vh - 64px);overflow:auto;border-radius:20px;background:#fff;box-shadow:0 20px 56px rgba(17,55,94,.22);border:1px solid #dbe7f3}.modal-head{padding:16px 18px;border-bottom:1px solid #e8eef5;display:flex;align-items:center;justify-content:space-between;font-size:18px;font-weight:700;color:#274560}.modal-close{width:30px;height:30px;border-radius:50%;border:1px solid #dbe8f4;background:#f7fbff;color:#5a748f;cursor:pointer}.modal-body{padding:18px}.modal-form-box{padding:16px;border:1px solid #e4edf6;border-radius:14px;background:#fbfdff}.modal-grid{display:grid;gap:14px}.form-row{display:grid;grid-template-columns:110px 1fr;gap:12px;align-items:center}.form-row.top{align-items:start}.form-label{color:#61758b;font-size:13px}.form-value-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.field-tip{font-size:12px;color:#8da0b3}.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}.summary-box,.flow-table-row{padding:12px;border:1px solid #e8eef5;border-radius:10px;background:#fff;font-size:13px;color:#60758a}.flow-table{display:grid;gap:8px}.flow-table-row{display:grid;grid-template-columns:1.2fr .8fr 1fr .7fr}.flow-table-head{font-weight:700;background:#f4f9ff;color:#33516d}.score-block,.score-item{display:grid;gap:10px}.score-options{display:grid;gap:8px}.fire-layout{display:grid;grid-template-columns:1.12fr 1.35fr .98fr;gap:14px;min-height:calc(100vh - 124px)}.fire-card{background:#fff;border:1px solid #d9e6f2;border-radius:18px;box-shadow:var(--shadow);overflow:hidden}.fire-card-body{padding:14px 16px}.fire-card-head{padding:14px 16px;border-bottom:1px solid #e8eef5;display:flex;align-items:center;justify-content:space-between}.fire-card-title{display:flex;align-items:center;gap:10px;font-size:16px;font-weight:700;color:#274560}.fire-card-title:before{content:"";width:10px;height:10px;border-radius:3px;background:linear-gradient(135deg,#58c0ff,#0f87ee)}.fire-tabs{display:flex;align-items:center;gap:26px;padding:8px 0 14px;color:#5b738d}.fire-tab{display:flex;align-items:center;gap:8px;font-size:14px}.fire-tab.active{color:#1688e8;font-weight:700}.fire-section{padding:12px 0;border-top:1px solid #eef3f8}.fire-section:first-child{border-top:none;padding-top:0}.fire-section h4{margin:0 0 12px;font-size:14px;color:#274560}.fire-form-grid{display:grid;gap:12px}.fire-row{display:grid;grid-template-columns:72px 1fr;gap:10px;align-items:center}.fire-row.top{align-items:start}.fire-label{font-size:13px;color:#60758a}.fire-input,.fire-textarea,.fire-mini,.fire-select{width:100%;border:1px solid #dbe8f4;border-radius:10px;background:#fff;padding:9px 12px;font-size:13px;color:#47627d}.fire-textarea{min-height:74px;resize:none}.fire-mini-grid{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:8px}.fire-btn-row{display:flex;gap:10px;flex-wrap:wrap}.fire-btn{height:34px;padding:0 14px;border-radius:10px;border:1px solid #d8e5f2;background:#fff;color:#58708a;font-size:13px;cursor:pointer}.fire-btn.primary{background:#1688e8;color:#fff;border-color:#1688e8}.fire-assignment{margin-top:14px;padding:12px;border:1px solid #dbe8f4;border-radius:12px;background:#f4f8fd;color:#36526f;font-size:14px}.fire-map{position:relative;height:100%;min-height:720px;background:linear-gradient(180deg,#edf1f5,#f7f9fb)}.fire-map::before{content:"";position:absolute;inset:0;background:
-      linear-gradient(90deg,transparent 0 18%, rgba(216,226,236,.85) 18% 18.4%, transparent 18.4% 33%, rgba(216,226,236,.85) 33% 33.35%, transparent 33.35% 100%),
-      linear-gradient(180deg,transparent 0 22%, rgba(216,226,236,.85) 22% 22.35%, transparent 22.35% 39%, rgba(216,226,236,.85) 39% 39.35%, transparent 39.35% 100%);
-      opacity:.8}
-    .fire-road{position:absolute;background:#ff9b61;border-radius:999px;box-shadow:0 0 0 2px rgba(255,145,84,.2)}
-    .fire-road.main{left:4%;right:2%;top:54%;height:14px;transform:rotate(14deg)}
-    .fire-road.vertical{left:56%;top:36%;width:12px;height:56%;transform:rotate(3deg)}
-    .fire-label-mark{position:absolute;color:#ff5757;font-size:15px;font-weight:700}
-    .fire-pin{position:absolute;width:18px;height:18px;border-radius:50%;background:#2bc866;box-shadow:0 0 0 6px rgba(43,200,102,.18)}
-    .fire-pin.red{background:#ff5858;box-shadow:0 0 0 6px rgba(255,88,88,.18)}
-    .fire-map-tools{position:absolute;left:14px;bottom:16px;display:grid;gap:8px}
-    .fire-tool{width:32px;height:32px;border-radius:4px;background:#4f5963;color:#fff;display:grid;place-items:center;font-size:18px}
-    .timeline{max-height:760px;overflow:auto;padding-right:4px}
-    .timeline::-webkit-scrollbar{width:8px}.timeline::-webkit-scrollbar-thumb{background:#c7d8ea;border-radius:999px}
-    .timeline-line{position:relative;padding-left:24px;margin-top:12px}
-    .timeline-line:before{content:"";position:absolute;left:6px;top:0;bottom:0;width:2px;background:#d9e3ef}
-    .timeline-item{position:relative;margin-bottom:18px}
-    .timeline-item:before{content:"";position:absolute;left:-22px;top:6px;width:12px;height:12px;border-radius:50%;background:#cfd9e5;border:2px solid #fff}
-    .timeline-time{font-size:12px;color:#6c8195;margin-bottom:8px}
-    .timeline-card{padding:12px;border:1px solid #e4edf6;border-radius:12px;background:#fff}
-    .timeline-card h5{margin:0 0 8px;font-size:14px;color:#274560}
-    .timeline-card p{margin:0 0 8px;font-size:13px;color:#60758a;line-height:1.7}
-    .timeline-photo{width:128px;height:128px;border-radius:10px;background:radial-gradient(circle at 50% 50%,#f5d181 0 6%,#161822 16%,#04050a 62%,#1b2130 100%);position:relative;overflow:hidden}
-    .timeline-photo:after{content:"";position:absolute;left:44px;top:64px;width:56px;height:28px;background:linear-gradient(180deg,rgba(255,134,68,.9),rgba(255,91,38,.18));filter:blur(4px);transform:rotate(8deg)}
-    .fire-breadcrumb{display:flex;align-items:center;gap:12px;color:#6f8598;font-size:14px;margin-bottom:10px}
-    .fire-breadcrumb .dispatch-link{font-size:14px}
-    @media (max-width:1680px){.overview,.pair-head,.pair-grid,.split{grid-template-columns:1fr}}
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>列表表单配置</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif; }
+  .active-item { border-left: 3px solid #3b82f6; background: #eff6ff; }
+  .inactive-item { border-left: 3px solid transparent; }
+  .tab-active { border-bottom: 2px solid #3b82f6; color: #3b82f6; font-weight: 600; }
+  .tab-inactive { border-bottom: 2px solid transparent; color: #6b7280; }
+  .drag-handle { cursor: grab; }
+  .drag-handle:active { cursor: grabbing; }
+  .dragging { opacity: 0.4; }
+  .drag-over { border-top: 2px solid #3b82f6; }
+  .toast {
+    position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+    background: #1e293b; color: white; padding: 10px 24px;
+    border-radius: 8px; font-size: 14px; z-index: 9999;
+    transition: opacity 0.3s;
+  }
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+    display: flex; align-items: center; justify-content: center; z-index: 1000;
+  }
+  .tag-text { font-size: 11px; padding: 1px 6px; border-radius: 4px; }
+  .tag-join { background: #fef3c7; color: #92400e; }
+  .tag-string { background: #e0f2fe; color: #075985; }
+  .tag-number { background: #dcfce7; color: #166534; }
+  .tag-date { background: #fae8ff; color: #86198f; }
+  .tag-enum { background: #fee2e2; color: #991b1b; }
+  input[type="text"], input[type="number"], select {
+    border: 1px solid #d1d5db; border-radius: 5px; padding: 4px 8px;
+    font-size: 13px; outline: none; background: white;
+  }
+  input[type="text"]:focus, input[type="number"]:focus, select:focus {
+    border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
+  }
+  .section-card {
+    background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+    margin-bottom: 16px; overflow: hidden;
+  }
+  .section-header {
+    background: #f8fafc; padding: 10px 16px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-title { font-weight: 600; font-size: 14px; color: #1e293b; }
+  .btn-primary {
+    background: #3b82f6; color: white; border: none;
+    padding: 7px 18px; border-radius: 6px; font-size: 13px;
+    cursor: pointer; font-weight: 500;
+  }
+  .btn-primary:hover { background: #2563eb; }
+  .btn-secondary {
+    background: white; color: #374151; border: 1px solid #d1d5db;
+    padding: 7px 16px; border-radius: 6px; font-size: 13px;
+    cursor: pointer; font-weight: 500;
+  }
+  .btn-secondary:hover { background: #f9fafb; }
+  .btn-danger { background: white; color: #ef4444; border: 1px solid #fca5a5;
+    padding: 4px 10px; border-radius: 5px; font-size: 12px; cursor: pointer; }
+  .btn-danger:hover { background: #fef2f2; }
+  .btn-add {
+    color: #3b82f6; font-size: 13px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 5px 0; border: none; background: none;
+  }
+  .btn-add:hover { color: #2563eb; }
+  th { background: #f8fafc; font-size: 12px; color: #6b7280; font-weight: 600;
+       padding: 8px 10px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+  td { font-size: 13px; padding: 8px 10px; border-bottom: 1px solid #f1f5f9;
+       color: #374151; vertical-align: middle; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #fafafa; }
+  .field-checkbox { width: 15px; height: 15px; cursor: pointer; accent-color: #3b82f6; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #f1f5f9; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+</style>
 </head>
-<body>
-  <div id="app">
-    <div class="layout">
-      <header class="header">
-        <div class="brand"><div class="logo"></div><div class="brand-text">鄂州市数字监管系统</div></div>
-        <nav class="nav">
-          <div class="nav-item">全景图</div><div class="nav-item">大屏应用</div><div class="nav-item">应用场景</div><div class="nav-item active">指挥调度</div><div class="nav-item">系统管理</div>
-        </nav>
-        <div class="tools"><input class="search" placeholder="搜索场景、事件、要素" /><span>⌕</span><span>⟡</span><span>◌</span><span class="message-remind" id="messageRemind" title="消息提醒">✉</span><span>admin</span></div>
-      </header>
-      <div class="message-popover" id="messagePopover">
-        <div class="message-head"><div class="message-title">消息提醒</div></div>
-        <div class="message-list">
-          <div class="message-item" id="messageTodoLink">
-            <div class="message-icon">办</div>
-            <div class="message-main"><div class="message-row"><span class="message-name">待办事件</span><span class="message-count">8条</span></div><div class="message-desc">包含消防处置、街面秩序、区域入侵等待办理事件。</div></div>
-          </div>
-          <div class="message-item" id="messageAuditLink">
-            <div class="message-icon">审</div>
-            <div class="message-main"><div class="message-row"><span class="message-name">待审核</span><span class="message-count">3条</span></div><div class="message-desc">来自XX部门的待审核事件</div></div>
-          </div>
-          <div class="message-item">
-            <div class="message-icon">督</div>
-            <div class="message-main"><div class="message-row"><span class="message-name">督办事件提醒</span><span class="message-count">3条</span></div><div class="message-desc"><span class="dispatch-link" data-supervise-message="DJ011">事件北湖桥梁巡检异常收到一条督办提醒。</span><br><span class="dispatch-link" data-supervise-message="DJ012">事件化工园气体告警收到一条督办提醒。</span><br><span class="dispatch-link" data-supervise-message="DJ001">事件东湖防溺水隐患收到一条督办提醒。</span></div></div>
-          </div>
-        </div>
+<body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
+
+<!-- 顶部导航栏 -->
+<header class="bg-white border-b border-gray-200 px-6 py-3 flex items-center gap-3 shrink-0">
+  <div class="w-7 h-7 bg-blue-600 rounded-md flex items-center justify-center">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="white">
+      <rect x="1" y="1" width="6" height="6" rx="1"/><rect x="9" y="1" width="6" height="6" rx="1"/>
+      <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
+    </svg>
+  </div>
+  <span class="font-semibold text-gray-800 text-base">列表表单配置</span>
+  <span class="text-gray-300 text-sm ml-1">/ 列表表单配置后台</span>
+  <div class="ml-auto flex items-center gap-2 text-xs text-gray-400">
+    <span id="saveStatus">未保存</span>
+  </div>
+</header>
+
+<div class="flex flex-1 overflow-hidden">
+
+  <!-- =========== 左侧列表表单 =========== -->
+  <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
+    <div class="px-4 py-3 border-b border-gray-100">
+      <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">列表表单</p>
+    </div>
+    <div class="flex-1 overflow-y-auto py-2" id="sidebarList"></div>
+    <div class="p-3 border-t border-gray-100">
+      <button class="w-full btn-secondary text-blue-600 border-blue-200 hover:bg-blue-50 flex items-center justify-center gap-1"
+              onclick="openNewModal()">
+        <span class="text-lg leading-none">+</span> 新增表单
+      </button>
+    </div>
+  </aside>
+
+  <!-- =========== 右侧工作区 =========== -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <!-- 右侧顶部：标准件名称 + Tab -->
+    <div class="bg-white border-b border-gray-200 px-6 py-0 shrink-0">
+      <div class="flex items-center gap-4 pt-3 pb-0">
+        <span class="text-base font-semibold text-gray-800" id="workspaceTitle">客户管理</span>
+        <span class="text-xs text-gray-400 bg-gray-100 rounded px-2 py-0.5" id="workspaceTable">customer</span>
       </div>
+      <div class="flex gap-6 mt-2">
+        <button class="tab-active pb-2 text-sm" id="tab-list" onclick="switchTab('list')">列表配置</button>
+        <button class="tab-inactive pb-2 text-sm" id="tab-detail" onclick="switchTab('detail')">详情配置</button>
+      </div>
+    </div>
 
-      <aside class="sidebar">
-        <div class="sidebar-head">
-          <div class="sidebar-head-title">指挥调度</div>
-          <button class="collapse-btn" type="button">=</button>
-        </div>
-        <div class="menu">
-          <div class="menu-panel">
-            <div class="menu-group">
-              <button class="menu-item active" data-direct-view="overview" type="button"><div class="menu-left"><span class="menu-icon">◌</span><span>总览</span></div><span></span></button>
-            </div>
-            <div class="menu-group" data-group="warning">
-              <button class="tree-item" data-toggle-group="warning" type="button">
-                <span class="tree-item-left"><span class="menu-icon">◔</span><span>预警管理</span></span>
-                <span class="tree-arrow">></span>
-              </button>
-              <div class="tree-sublist">
-                <button class="tree-subitem" data-sub-view="warningList" data-parent-group="warning" type="button">预警列表</button>
-                <button class="tree-subitem" data-sub-view="warningInfo" data-parent-group="warning" type="button">超时办理事件列表</button>
-              </div>
-            </div>
-            <div class="menu-group" data-group="mine">
-              <button class="tree-item" data-toggle-group="mine" type="button">
-                <span class="tree-item-left"><span class="menu-icon">◎</span><span>我的事件</span></span>
-                <span class="tree-arrow">></span>
-              </button>
-              <div class="tree-sublist">
-                <button class="tree-subitem" data-sub-view="todo" data-parent-group="mine" type="button">我的待办</button>
-                <button class="tree-subitem" data-sub-view="done" data-parent-group="mine" type="button">已办事件</button>
-                <button class="tree-subitem" data-sub-view="closed" data-parent-group="mine" type="button">办结事件</button>
-                <button class="tree-subitem" data-sub-view="evaluate" data-parent-group="mine" type="button">评价事件</button>
-              </div>
-            </div>
-            <div class="menu-group" data-group="subordinate">
-              <button class="tree-item" data-toggle-group="subordinate" type="button">
-                <span class="tree-item-left"><span class="menu-icon">▣</span><span>下辖事件</span></span>
-                <span class="tree-arrow">></span>
-              </button>
-              <div class="tree-sublist">
-                <button class="tree-subitem" data-sub-view="subTodo" data-parent-group="subordinate" type="button">下辖待办事件</button>
-                <button class="tree-subitem" data-sub-view="subClosed" data-parent-group="subordinate" type="button">下辖办结事件</button>
-                <button class="tree-subitem" data-sub-view="subOvertime" data-parent-group="subordinate" type="button">超时事件</button>
-                <button class="tree-subitem" data-sub-view="subStats" data-parent-group="subordinate" type="button">事件统计</button>
-              </div>
-            </div>
-            <div class="menu-group" data-group="supervise">
-              <button class="tree-item" data-toggle-group="supervise" type="button">
-                <span class="tree-item-left"><span class="menu-icon">✦</span><span>事件督办</span></span>
-                <span class="tree-arrow">></span>
-              </button>
-              <div class="tree-sublist">
-                <button class="tree-subitem" data-sub-view="superviseCenter" data-parent-group="supervise" type="button">督办事件中心</button>
-                <button class="tree-subitem" data-sub-view="superviseProcessing" data-parent-group="supervise" type="button">处置中督办</button>
-                <button class="tree-subitem" data-sub-view="superviseAudit" data-parent-group="supervise" type="button">督办审核</button>
-              </div>
-            </div>
-            <div class="menu-group" data-group="smart">
-              <button class="tree-item" data-toggle-group="smart" type="button">
-                <span class="tree-item-left"><span class="menu-icon">⚑</span><span>智能预警</span></span>
-                <span class="tree-arrow">></span>
-              </button>
-              <div class="tree-sublist">
-                <button class="tree-subitem" data-sub-view="modelList" data-parent-group="smart" type="button">算法模型</button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="menu-foot">当前模块可点击切换</div>
-      </aside>
+    <!-- 右侧内容区 -->
+    <div class="flex-1 overflow-y-auto p-5" id="workspaceContent">
+      <!-- 动态渲染 -->
+    </div>
 
-      <main class="main">
-        <div class="shell">
-          <div class="view active" id="overviewView">
-          <div class="dashboard">
-            <section class="banner">
-              <div class="banner-top">
-                <div class="banner-title">重大节点提示：五一假期临近 · 汛期将至</div>
-                <div class="banner-time">更新时间：2026-04-15 12:30:00</div>
-              </div>
-            </section>
+    <!-- 底部保存按钮 -->
+    <div class="bg-white border-t border-gray-200 px-6 py-3 flex justify-end shrink-0">
+      <button class="btn-primary" onclick="saveConfig()">💾 保存配置</button>
+    </div>
+  </main>
+</div>
 
-            <div class="split split-wide">
-              <section class="panel"><div class="panel-body">
-                <div class="panel-head">
-                  <div class="panel-title">事件报警与处置统计</div>
-                  <div class="top-tools">
-                    <select class="date-input" id="alarmDeptFilter"><option value="全部">责任部门：全部</option><option value="消防">责任部门：消防</option><option value="应急">责任部门：应急</option><option value="生态环保">责任部门：生态环保</option><option value="城管">责任部门：城管</option></select>
-                    <select class="date-input" id="alarmTypeFilter"><option value="全部">事件类型：全部</option><option value="火灾扑救">事件类型：火灾扑救</option><option value="区域入侵">事件类型：区域入侵</option><option value="烟火告警">事件类型：烟火告警</option><option value="街面秩序">事件类型：街面秩序</option><option value="宣传广告">事件类型：宣传广告</option></select>
-                    <select class="date-input" id="alarmStatusFilter"><option value="全部">处置状态：全部</option><option value="已处置">处置状态：已处置</option><option value="处理中">处置状态：处理中</option><option value="未处置">处置状态：未处置</option></select>
-                    <select class="date-input" id="alarmRegionFilter"><option value="全部">发生区域：全部</option><option value="鄂城区">发生区域：鄂城区</option><option value="华容区">发生区域：华容区</option><option value="梁子湖区">发生区域：梁子湖区</option></select>
-                    <input class="date-input" id="alarmNameFilter" placeholder="事件名称" />
-                    <input class="date-input" type="date" id="alarmStartDate" value="2026-04-01" />
-                    <span class="muted">至</span>
-                    <input class="date-input" type="date" id="alarmEndDate" value="2026-04-15" />
-                    <button class="action-btn secondary" type="button" id="alarmQueryBtn">查询</button>
-                    <button class="action-btn secondary" type="button" id="alarmResetBtn">重置</button>
-                  </div>
-                </div>
-                <div style="display:flex;justify-content:flex-end;margin-top:-4px;margin-bottom:10px;">
-                  <div id="alarmEventCount" style="display:none;padding:6px 12px;border:1px solid #d8e5f2;border-radius:999px;background:#f7fbff;color:#4f6f8f;font-size:13px;">事件总数：0</div>
-                </div>
-                <div class="scroll-wrap" style="margin-top:14px;">
-                  <table>
-                    <thead id="alarmTableHead"><tr><th>部门</th><th><span class="th-filter">事件数<span class="sort-mark active-down" id="alarmSortCount"><i class="up"></i><i class="down"></i></span></span></th><th>环比</th><th><span class="th-filter">平均处置时间<span class="sort-mark active-up" id="alarmSortTime"><i class="up"></i><i class="down"></i></span></span></th><th>环比</th><th>占比条形图</th><th>处置率</th></tr></thead>
-                    <tbody id="alarmTableBody"></tbody>
-                  </table>
-                </div>
-              </div></section>
-
-              <section class="panel"><div class="panel-body">
-                <div class="panel-head">
-                  <div class="panel-title">频发事件</div>
-                  <div class="top-tools">
-                    <select class="date-input" id="hotRegionFilter"><option value="全部">地区：全部</option><option value="鄂城区">地区：鄂城区</option><option value="华容区">地区：华容区</option><option value="梁子湖区">地区：梁子湖区</option></select>
-                    <select class="date-input" id="hotDeptFilter"><option value="全部">部门：全部</option><option value="应急">部门：应急</option><option value="城管">部门：城管</option><option value="生态环保">部门：生态环保</option></select>
-                    <select class="date-input" id="hotTimeFilter"><option value="30">时间：近30天</option><option value="7">时间：近7天</option><option value="90">时间：近90天</option></select>
-                    <input class="date-input" id="hotSearchInput" placeholder="搜索事件类型" />
-                    <button class="action-btn secondary" id="hotSearchBtn">搜索</button>
-                  </div>
-                </div>
-                <div class="top-list scroll-wrap" id="hotEventList">
-                  <div class="top-head"><span>序号</span><span>部门</span><span>事件类型</span><span>发生次数</span><span>趋势条形图</span></div>
-                </div>
-                <div class="note" id="hotEventNote"></div>
-              </div></section>
-            </div>
-
-            <section class="panel">
-              <div class="panel-body">
-                <div class="panel-head">
-                  <div class="panel-head-left">
-                    <div class="panel-title">全景图数据要素总览</div>
-                    <select class="chip-select" id="sceneChip">
-                      <option value="全部场景">全部场景</option>
-                      <option value="消防">消防</option>
-                      <option value="应急">应急</option>
-                    </select>
-                  </div>
-                  <div></div>
-                </div>
-                <div class="overview">
-                  <div class="cards-scroll">
-                    <div class="cards" id="overviewCards"></div>
-                  </div>
-                  <div class="trend-card">
-                    <div class="trend-head">
-                      <div class="trend-title">风险预警事件趋势</div>
-                      <div class="trend-range">
-                        <div class="trend-badge active" data-range="7">近7天</div>
-                        <div class="trend-badge" data-range="30">近30天</div>
-                        <div class="trend-badge" data-range="90">近三个月</div>
-                      </div>
-                    </div>
-                    <svg class="trend-svg" id="trendSvg" viewBox="0 0 340 220" preserveAspectRatio="none">
-                      <defs>
-                        <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stop-color="#4ea8ef" stop-opacity="0.28"></stop>
-                          <stop offset="100%" stop-color="#4ea8ef" stop-opacity="0.03"></stop>
-                        </linearGradient>
-                      </defs>
-                    </svg>
-                    <div class="trend-note" id="trendNote"></div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            <div class="split">
-              <section class="panel"><div class="panel-body">
-                <div class="panel-title">设备在线率</div>
-                <div class="scroll-wrap" style="margin-top:14px;">
-                  <table class="device-table">
-                    <thead><tr><th>设备名称</th><th><span class="th-filter">总数<span class="sort-mark" id="deviceSortTotal"><i class="up"></i><i class="down"></i></span></span></th><th>在线数</th><th>离线数</th><th><span class="th-filter">在线率<span class="sort-mark active-down" id="deviceSortRate"><i class="up"></i><i class="down"></i></span></span></th></tr></thead>
-                    <tbody id="deviceTableBody"></tbody>
-                  </table>
-                </div>
-              </div></section>
-
-              <section class="panel"><div class="panel-body">
-                <div class="panel-head">
-                  <div class="panel-title">12345事件分类统计</div>
-                  <div class="range-group">
-                    <input class="date-input" type="date" id="hotlineStart" value="2026-03-16" />
-                    <span class="muted">至</span>
-                    <input class="date-input" type="date" id="hotlineEnd" value="2026-04-15" />
-                    <button class="action-btn secondary" id="hotlineApply">应用</button>
-                  </div>
-                </div>
-                <div class="toggle"><span class="pill active" id="hotlineDeptTab">按部门</span><span class="pill" id="hotlineTypeTab">按类型</span></div>
-                <div class="class-box">
-                  <div class="class-head"><div id="hotlineTitle">按类型统计（工单总量2386件）</div><div id="hotlineMeta">今日工单 156件　办结率 73%　满意度 94%</div></div>
-                  <div class="pie-layout">
-                    <div class="pie-chart" id="hotlinePie">
-                      <div class="pie-center"><strong id="hotlineTotal">2386</strong><span>工单总量</span></div>
-                    </div>
-                    <div class="pie-legend scroll-wrap" id="hotlineLegend"></div>
-                  </div>
-                </div>
-              </div></section>
-            </div>
-
-          </div>
-          </div>
-
-          <div class="view" id="dispatchView">
-            <div class="dispatch-shell">
-              <div class="crumbs" id="dispatchCrumb">指挥调度 / 预警管理</div>
-              <div class="dispatch-tabs" id="dispatchTabs"></div>
-              <section class="board">
-                <div class="board-head">
-                  <div class="board-title"><span class="title-mark"></span><span id="dispatchTitle">预警管理</span></div>
-                  <div class="action-group" id="dispatchHeadActions">
-                    <button class="btn primary" id="dispatchCreateBtn" type="button">新建</button>
-                  </div>
-                </div>
-                <div class="toolbar" id="dispatchToolbar">
-                  <div class="filter-row">
-                    <div class="field-wrap">
-                      <div class="filter-label" id="dispatchFilterLabel">筛选：</div>
-                      <div class="fake-select" id="dispatchFilterOne">来源部门：全部</div>
-                      <div class="fake-select" id="dispatchFilterTwo">责任部门：全部</div>
-                      <div class="fake-select" id="dispatchFilterThree">状态：全部</div>
-                      <div class="fake-select" id="dispatchFilterFour" style="display:none;">完成时限：全部</div>
-                    </div>
-                    <div class="action-group">
-                      <button class="btn primary" type="button">查询</button>
-                      <button class="btn" type="button">重置</button>
-                    </div>
-                  </div>
-                  <div class="search-row" id="dispatchSearchRow">
-                    <div class="search-wrap">
-                      <div class="search-label">搜索：</div>
-                      <div class="search-input" id="dispatchKeyword">请输入事件标题 / 编号 / 关键词</div>
-                      <button class="btn primary" type="button">搜索</button>
-                    </div>
-                  </div>
-                </div>
-                <div class="table-wrap" id="dispatchTableWrap">
-                  <table>
-                    <thead id="dispatchHead"></thead>
-                    <tbody id="dispatchList"></tbody>
-                  </table>
-                </div>
-                <div class="table-footer" id="dispatchFooter">
-                  <div id="dispatchRecordText">共 0 条记录</div>
-                  <div class="pagination">
-                    <div class="page-btn">&lt;</div>
-                    <div class="page-btn current">1</div>
-                    <div class="page-btn">2</div>
-                    <div class="page-btn">&gt;</div>
-                  </div>
-                </div>
-                <div class="table-footer" id="dispatchBatchRow" style="display:none;justify-content:flex-start;">
-                  <div class="action-group" id="dispatchBatchActions"></div>
-                </div>
-                <div class="dispatch-detail" id="dispatchDetail"></div>
-              </section>
-            </div>
-          </div>
-          <div class="view" id="fireDetailView">
-            <div class="fire-breadcrumb">
-              <span class="dispatch-link" id="backToOverview">返回总览</span>
-              <span>首页</span>
-              <span>新增事件</span>
-              <span style="color:#1688e8;">消防处置</span>
-            </div>
-            <div class="fire-layout">
-              <section class="fire-card">
-                <div class="fire-card-head">
-                  <div class="fire-card-title">事件详情与数据共享清单</div>
-                  <button class="fire-btn" type="button">隐藏处置流程</button>
-                </div>
-                <div class="fire-card-body">
-                  <div class="fire-tabs">
-                    <div class="fire-tab">○ 火灾扑救</div>
-                    <div class="fire-tab active">● 抢险救援</div>
-                    <div class="fire-tab">○ 社会救助</div>
-                  </div>
-                  <div class="fire-section">
-                    <h4>警情信息</h4>
-                    <div class="fire-form-grid">
-                      <div class="fire-row top"><div class="fire-label">警情地址</div><textarea class="fire-textarea">湖北省鄂州市华容区庙岭镇大庙村发展大道6号中国石化销售股份有限公司湖北鄂州红莲湖加油站</textarea></div>
-                      <div class="fire-btn-row"><button class="fire-btn" type="button">修改地址</button><button class="fire-btn primary" type="button">保存</button><button class="fire-btn" type="button">图上选点</button></div>
-                      <div class="fire-row"><div class="fire-label">经纬度</div><div class="fire-mini-grid"><input class="fire-input" value="114.616394" /><input class="fire-input" value="30.444907" /><input class="fire-input" value="定位点" /></div></div>
-                      <div class="fire-row"><div class="fire-label">警情时间</div><div class="fire-mini-grid"><input class="fire-input" value="2026-04-09" /><input class="fire-input" value="22" /><input class="fire-input" value="17" /></div></div>
-                      <div class="fire-row"><div class="fire-label">报警电话</div><input class="fire-input" value="15102737036" /></div>
-                      <div class="fire-row"><div class="fire-label">警情等级</div><select class="fire-select"><option>红色预警</option><option>橙色预警</option></select></div>
-                      <div class="fire-row top"><div class="fire-label">事件详情</div><textarea class="fire-textarea">【警情调令】22时17分，华容区庙岭镇红莲湖9号院附近群众被困车内，调派红莲湖专职消防站出警处置，报警电话：15102737036</textarea></div>
-                    </div>
-                  </div>
-                  <div class="fire-section">
-                    <h4>站级调派</h4>
-                    <div class="fire-assignment">红莲湖政府专职消防站</div>
-                  </div>
-                </div>
-              </section>
-              <section class="fire-card">
-                <div class="fire-map">
-                  <div class="fire-road main"></div>
-                  <div class="fire-road vertical"></div>
-                  <div class="fire-pin" style="left:54%;top:47%;"></div>
-                  <div class="fire-pin red" style="left:72%;top:28%;"></div>
-                  <div class="fire-label-mark" style="left:46%;top:44%;">华容区庙岭镇大庙村发展大道6号中国石化销售股份有限公司湖北鄂州红莲湖加油站</div>
-                  <div class="fire-map-tools">
-                    <div class="fire-tool">⌂</div>
-                    <div class="fire-tool">□</div>
-                    <div class="fire-tool">+</div>
-                    <div class="fire-tool">−</div>
-                  </div>
-                </div>
-              </section>
-              <section class="fire-card">
-                <div class="fire-card-head">
-                  <div class="fire-card-title">处置流程</div>
-                </div>
-                <div class="fire-card-body">
-                  <div class="fire-section">
-                    <div class="fire-btn-row"><button class="fire-btn primary" type="button">刷新</button></div>
-                    <div class="fire-form-grid" style="margin-top:10px;">
-                      <div class="fire-row top"><div class="fire-label">处置描述</div><textarea class="fire-textarea" placeholder="请输入处置描述"></textarea></div>
-                      <div class="fire-row"><div class="fire-label">处置时间</div><div class="fire-mini-grid"><input class="fire-input" value="2026-04-17" /><input class="fire-input" value="15" /><input class="fire-input" value="27" /></div></div>
-                      <div class="fire-row top"><div class="fire-label">操作</div><div class="text-area-fake" style="min-height:120px;display:grid;place-items:center;">将文件拖到此处，或点击上传</div></div>
-                      <div class="fire-btn-row"><button class="fire-btn primary" type="button">新增</button><button class="fire-btn" type="button">清空</button></div>
-                    </div>
-                  </div>
-                  <div class="timeline">
-                    <div class="timeline-line">
-                      <div class="timeline-item">
-                        <div class="timeline-time">2026-04-09 22:43:00</div>
-                        <div class="timeline-card">
-                          <h5>处置</h5>
-                          <p>描述：22时43分，红莲湖专职消防站到场。<br>操作员：消防支队</p>
-                          <div class="timeline-photo"></div>
-                        </div>
-                      </div>
-                      <div class="timeline-item">
-                        <div class="timeline-time">2026-04-09 22:59:00</div>
-                        <div class="timeline-card">
-                          <h5>反馈</h5>
-                          <p>现场火势已得到控制，周边道路已同步疏导，准备移交后续处置。</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            </div>
-          </div>
-        </div>
-      </main>
+<!-- ==================== 字段编辑弹窗 ==================== -->
+<div id="fieldModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event,'fieldModal')">
+  <div class="bg-white rounded-xl w-[600px] max-h-[80vh] flex flex-col shadow-2xl">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-800 text-base" id="fieldModalTitle">编辑字段</h3>
+      <button onclick="closeModal('fieldModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+    <div class="flex-1 overflow-y-auto px-6 py-4" id="fieldModalBody"></div>
+    <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+      <div class="flex gap-2">
+        <button class="btn-secondary text-xs py-1.5 px-3" onclick="selectAllFields(true)">全选</button>
+        <button class="btn-secondary text-xs py-1.5 px-3" onclick="selectAllFields(false)">取消全选</button>
+      </div>
+      <div class="flex gap-2">
+        <button class="btn-secondary" onclick="closeModal('fieldModal')">取消</button>
+        <button class="btn-primary" onclick="confirmFieldEdit()">确认</button>
+      </div>
     </div>
   </div>
-  <div class="modal-mask" id="dispatchModal">
-    <div class="modal-card">
-      <div class="modal-head">
-        <span id="dispatchModalTitle">弹窗</span>
-        <button class="modal-close" id="dispatchModalClose" type="button">x</button>
+</div>
+
+<!-- ==================== 新增表单弹窗 ==================== -->
+<div id="newModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event,'newModal')">
+  <div class="bg-white rounded-xl w-[440px] shadow-2xl">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-800 text-base">新增表单</h3>
+      <button onclick="closeModal('newModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+    <div class="px-6 py-5 flex flex-col gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">标准件名称 <span class="text-red-500">*</span></label>
+        <input type="text" id="newName" class="w-full" placeholder="如：合同管理" />
       </div>
-      <div class="modal-body" id="dispatchModalBody"></div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">数据源表名</label>
+        <input type="text" id="newTable" class="w-full" placeholder="如：contract（选填）" />
+      </div>
+    </div>
+    <div class="px-6 pb-5 flex justify-end gap-2">
+      <button class="btn-secondary" onclick="closeModal('newModal')">取消</button>
+      <button class="btn-primary" onclick="confirmNewStandard()">创建</button>
     </div>
   </div>
-  <script>
-    const overviewScenes = {
-      "全部场景": {
-        detail: "当前展示城市运行总览全量要素，覆盖人、地、事、物、组织、场所六类数据，可用于跨场景联动研判。",
-        cards: {
-          "人": [["实有人口","147.4万"],["流动人口","18.7万"],["重点人员","2.3万"]],
-          "地": [["标准地址","162.6万"],["行政区划","3区/25镇"],["风险区","12处"],["水域河流","9条"]],
-          "事": [["12345工单","4.7万"],["今日预警","1248件"],["已处置","1102件"],["处置率","92.4%"]],
-          "物": [["摄像头","1.2万路"],["燃气监测","1860台"],["供水监测","920台"],["排水监测","740台"]],
-          "组织": [["应急力量","56支"],["责任人员","856人"],["联动部门","12个"],["网格员","2450人"]],
-          "场所": [["重点场所","8,650处"],["重大设施","23处"],["避难场所","56处"],["危化企业","32家"]]
+</div>
+
+<!-- ==================== 修改关联表字段弹窗 ==================== -->
+<div id="joinModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event,'joinModal')">
+  <div class="bg-white rounded-xl w-[560px] max-h-[80vh] flex flex-col shadow-2xl">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+      <h3 class="font-semibold text-gray-800 text-base">修改关联表字段</h3>
+      <button onclick="closeModal('joinModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+    <div class="px-6 py-5 flex-1 overflow-y-auto flex flex-col gap-4">
+      <p class="text-sm text-gray-500">展示所有的字段可进行勾选，默认展示本标准件表的字段，但是支持修改为别的表并勾选字段。</p>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">选择表</label>
+        <select id="joinTable" class="w-full" onchange="renderJoinFieldOptions()"></select>
+      </div>
+      <div id="joinFieldOptions" class="border border-gray-200 rounded-lg overflow-hidden"></div>
+    </div>
+    <div class="px-6 pb-5 flex justify-end gap-2">
+      <button class="btn-secondary" onclick="closeModal('joinModal')">取消</button>
+      <button class="btn-primary" onclick="confirmJoinField()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast hidden"></div>
+
+<script>
+// ============================================================
+// 预置数据
+// ============================================================
+const PRESET_STANDARDS = [
+  {
+    id: 's1', name: '清明祭扫', table: 'qingming_sweep',
+    fields: [
+      { key: 'act_no',       label: '活动编号',   type: 'string', active: true,  join: false },
+      { key: 'act_name',     label: '活动名称',   type: 'string', active: true,  join: false },
+      { key: 'location',     label: '祭扫地点',   type: 'string', active: true,  join: false },
+      { key: 'org_unit',     label: '组织单位',   type: 'string', active: true,  join: false },
+      { key: 'contact',      label: '联系人',     type: 'string', active: true,  join: false },
+      { key: 'phone',        label: '联系电话',   type: 'string', active: true,  join: false },
+      { key: 'sweep_date',   label: '祭扫日期',   type: 'date',   active: true,  join: false },
+      { key: 'appoint_num',  label: '预约人数',   type: 'number', active: true,  join: false },
+      { key: 'actual_num',   label: '实到人数',   type: 'number', active: true,  join: false },
+      { key: 'status',       label: '活动状态',   type: 'enum',   active: true,  join: false },
+      { key: 'remark',       label: '备注',       type: 'string', active: false, join: false },
+    ]
+  },
+  {
+    id: 's2', name: '任务统计查询', table: 'task_stat',
+    fields: [
+      { key: 'task_no',      label: '任务编号',   type: 'string', active: true,  join: false },
+      { key: 'task_name',    label: '任务名称',   type: 'string', active: true,  join: false },
+      { key: 'module',       label: '所属模块',   type: 'enum',   active: true,  join: false },
+      { key: 'resp_unit',    label: '负责单位',   type: 'string', active: true,  join: false },
+      { key: 'owner',        label: '负责人',     type: 'string', active: true,  join: false },
+      { key: 'issued_at',    label: '下发时间',   type: 'date',   active: true,  join: false },
+      { key: 'deadline',     label: '截止时间',   type: 'date',   active: true,  join: false },
+      { key: 'finished_at',  label: '完成时间',   type: 'date',   active: false, join: false },
+      { key: 'status',       label: '任务状态',   type: 'enum',   active: true,  join: false },
+      { key: 'complete_rate',label: '完成率(%)',  type: 'number', active: true,  join: false },
+      { key: 'remark',       label: '备注',       type: 'string', active: false, join: false },
+    ]
+  },
+  {
+    id: 's3', name: '矛盾纠纷', table: 'dispute',
+    fields: [
+      { key: 'dispute_no',   label: '纠纷编号',   type: 'string', active: true,  join: false },
+      { key: 'dispute_type', label: '纠纷类型',   type: 'enum',   active: true,  join: false },
+      { key: 'location',     label: '发生地点',   type: 'string', active: true,  join: false },
+      { key: 'party_name',   label: '当事人姓名', type: 'string', active: true,  join: false },
+      { key: 'phone',        label: '联系电话',   type: 'string', active: true,  join: false },
+      { key: 'reg_time',     label: '登记时间',   type: 'date',   active: true,  join: false },
+      { key: 'handle_unit',  label: '受理单位',   type: 'string', active: true,  join: false },
+      { key: 'mediator',     label: '调解人',     type: 'string', active: true,  join: false },
+      { key: 'med_status',   label: '调解状态',   type: 'enum',   active: true,  join: false },
+      { key: 'med_result',   label: '调解结果',   type: 'enum',   active: false, join: false },
+      { key: 'close_time',   label: '结案时间',   type: 'date',   active: false, join: false },
+      { key: 'remark',       label: '备注',       type: 'string', active: false, join: false },
+    ]
+  },
+  {
+    id: 's4', name: '标准件使用情况统计', table: 'standard_usage',
+    fields: [
+      { key: 'stat_no',      label: '统计编号',       type: 'string', active: true,  join: false },
+      { key: 'std_name',     label: '标准件名称',     type: 'string', active: true,  join: false },
+      { key: 'module',       label: '所属模块',       type: 'enum',   active: true,  join: false },
+      { key: 'call_count',   label: '调用次数',       type: 'number', active: true,  join: false },
+      { key: 'active_users', label: '活跃用户数',     type: 'number', active: true,  join: false },
+      { key: 'last_used_at', label: '最近使用时间',   type: 'date',   active: true,  join: false },
+      { key: 'avg_resp_ms',  label: '平均响应时间(ms)',type: 'number', active: true,  join: false },
+      { key: 'error_count',  label: '错误次数',       type: 'number', active: true,  join: false },
+      { key: 'avail_rate',   label: '可用率(%)',      type: 'number', active: true,  join: false },
+      { key: 'version',      label: '版本号',         type: 'string', active: false, join: false },
+      { key: 'remark',       label: '备注',           type: 'string', active: false, join: false },
+    ]
+  },
+];
+
+// ============================================================
+// 状态管理
+// ============================================================
+const PRESET_VERSION = 'v2';
+if (localStorage.getItem('sc_version') !== PRESET_VERSION) {
+  localStorage.removeItem('sc_standards');
+  localStorage.removeItem('sc_configs');
+  localStorage.setItem('sc_version', PRESET_VERSION);
+}
+let standards = JSON.parse(localStorage.getItem('sc_standards') || 'null') || deepClone(PRESET_STANDARDS);
+let configs = JSON.parse(localStorage.getItem('sc_configs') || '{}');
+let currentId = standards[0].id;
+let currentTab = 'list';
+let editingFieldId = null; // 正在编辑字段的标准件id
+
+// 初始化每个标准件的配置
+function ensureConfig(id) {
+  if (!configs[id]) {
+    const std = getStd(id);
+    const activeFields = std.fields.filter(f => f.active);
+    configs[id] = {
+      listFields: activeFields.map((f, i) => ({
+        key: f.key, label: f.label, visible: true, width: 120,
+        align: 'left', format: '', order: i, join: f.join || false, joinTable: f.joinTable || ''
+      })),
+      detailGroups: [
+        {
+          id: 'g1', name: '基本信息',
+          fields: activeFields.slice(0, Math.ceil(activeFields.length / 2)).map(f => ({
+            key: f.key, label: f.label, visible: true, join: f.join || false
+          }))
+        },
+        {
+          id: 'g2', name: '扩展信息',
+          fields: activeFields.slice(Math.ceil(activeFields.length / 2)).map(f => ({
+            key: f.key, label: f.label, visible: true, join: f.join || false
+          }))
         }
-      },
-      "消防": {
-        detail: "消防场景突出重点场所、消防设施和火警事件，适合查看火灾防控和处置能力。",
-        cards: {
-          "人": [["值守人员","1860人"],["消防员","426人"],["重点人员","3200人"]],
-          "地": [["消防重点单位","1260处"],["高层建筑","986栋"],["水域点位","42处"]],
-          "事": [["火警事件","326件"],["已处置","318件"],["处置率","97.5%"]],
-          "物": [["消防栓","4380个"],["摄像头","3600路"],["烟感设备","5280台"]],
-          "组织": [["消防队站","12个"],["救援编组","24支"],["联动部门","8个"]],
-          "场所": [["商圈","126处"],["学校","312所"],["医院","65所"]]
-        }
-      },
-      "应急": {
-        detail: "应急场景以预警、救援力量和风险区为核心，适合查看突发事件防控资源。",
-        cards: {
-          "人": [["救援人员","5400人"],["网格员","2450人"],["重点人员","1.1万"]],
-          "地": [["风险区","12处"],["避险路线","76条"],["应急点位","142处"]],
-          "事": [["今日预警","1248件"],["应急事件","3694件"],["已处置","3315件"]],
-          "物": [["燃气监测","1860台"],["供水监测","920台"],["排水监测","740台"]],
-          "组织": [["应急力量","56支"],["联动部门","12个"],["专家组","18个"]],
-          "场所": [["避难场所","56处"],["仓储基地","18处"],["危化企业","32家"]]
-        }
-      }
-    };
-
-    const alarmRows = [
-      { dept: "消防", count: 34, ratio: "-67.3%", time: 68, timeRatio: "-33.8%", share: 0.3, disposal: "100.0%" },
-      { dept: "应急", count: 3694, ratio: "-44.3%", time: 77, timeRatio: "+3.0%", share: 34.1, disposal: "89.7%" },
-      { dept: "生态环保", count: 1705, ratio: "-39.7%", time: 209, timeRatio: "-1.3%", share: 15.7, disposal: "95.2%" },
-      { dept: "城管", count: 5393, ratio: "-55.9%", time: 481, timeRatio: "-27.3%", share: 49.8, disposal: "88.4%" }
-    ];
-
-    const alarmEventRows = [
-      { dept: "消防", eventName: "幸福小区楼道起火", type: "火灾扑救", status: "已处置", region: "鄂城区", level: "高", tag: "重点督办", happenTime: "2026-04-02 06:50" },
-      { dept: "消防", eventName: "凤凰街道仓储烟雾预警", type: "火灾扑救", status: "处理中", region: "华容区", level: "中", tag: "限时处置", happenTime: "2026-04-09 11:20" },
-      { dept: "消防", eventName: "葛店开发区厂房明火告警", type: "火灾扑救", status: "已处置", region: "华容区", level: "高", tag: "联动处置", happenTime: "2026-04-11 14:18" },
-      { dept: "消防", eventName: "临空物流园危化仓库冒烟", type: "火灾扑救", status: "处理中", region: "梁子湖区", level: "高", tag: "重点督办", happenTime: "2026-04-12 20:42" },
-      { dept: "消防", eventName: "洋澜湖隧道车辆自燃", type: "火灾扑救", status: "已处置", region: "鄂城区", level: "中", tag: "联动处置", happenTime: "2026-04-13 07:36" },
-      { dept: "消防", eventName: "庙岭镇加油站油气异常预警", type: "火灾扑救", status: "处理中", region: "华容区", level: "高", tag: "重点督办", happenTime: "2026-04-14 22:17" },
-      { dept: "消防", eventName: "南浦路老旧小区配电箱起火", type: "火灾扑救", status: "未处置", region: "鄂城区", level: "中", tag: "限时处置", happenTime: "2026-04-15 19:08" },
-      { dept: "消防", eventName: "梁子湖景区民宿厨房燃气泄漏", type: "火灾扑救", status: "已处置", region: "梁子湖区", level: "中", tag: "一般跟踪", happenTime: "2026-04-16 08:26" },
-      { dept: "应急", eventName: "东湖公园区域入侵告警", type: "区域入侵", status: "处理中", region: "鄂城区", level: "高", tag: "联动处置", happenTime: "2026-04-14 09:15" },
-      { dept: "应急", eventName: "滨江码头人员聚集预警", type: "区域入侵", status: "未处置", region: "华容区", level: "中", tag: "重点督办", happenTime: "2026-04-13 18:40" },
-      { dept: "应急", eventName: "临空园区围栏越界告警", type: "区域入侵", status: "已处置", region: "梁子湖区", level: "低", tag: "一般跟踪", happenTime: "2026-04-08 15:05" },
-      { dept: "生态环保", eventName: "北郊农田烟火告警", type: "烟火告警", status: "处理中", region: "梁子湖区", level: "高", tag: "重点督办", happenTime: "2026-04-10 07:15" },
-      { dept: "生态环保", eventName: "葛店工业区扬尘异常", type: "烟火告警", status: "已处置", region: "华容区", level: "中", tag: "联动处置", happenTime: "2026-04-06 14:25" },
-      { dept: "城管", eventName: "人民路流动摊贩占道", type: "街面秩序", status: "已处置", region: "鄂城区", level: "中", tag: "一般跟踪", happenTime: "2026-04-01 22:10" },
-      { dept: "城管", eventName: "文星大道违规宣传广告", type: "宣传广告", status: "未处置", region: "华容区", level: "低", tag: "限时处置", happenTime: "2026-04-12 10:30" },
-      { dept: "城管", eventName: "吴都古肆街面秩序整治", type: "街面秩序", status: "处理中", region: "梁子湖区", level: "中", tag: "联动处置", happenTime: "2026-04-15 08:45" }
-    ];
-
-    const deviceRows = [
-      { name: "摄像头", total: 12000, online: 10680, offline: 1320, rate: 89.0 },
-      { name: "燃气传感器", total: 1860, online: 1786, offline: 74, rate: 96.0 },
-      { name: "供水传感器", total: 920, online: 856, offline: 64, rate: 93.0 },
-      { name: "排水传感器", total: 740, online: 673, offline: 67, rate: 91.0 }
-    ];
-
-    const hotEvents = [
-      { region: "鄂城区", dept: "应急", type: "区域入侵告警", count: 7475, days: 30 },
-      { region: "华容区", dept: "城管", type: "街面秩序", count: 6355, days: 30 },
-      { region: "鄂城区", dept: "城管", type: "市容环境", count: 4269, days: 30 },
-      { region: "梁子湖区", dept: "生态环保", type: "烟火告警", count: 2473, days: 30 },
-      { region: "华容区", dept: "城管", type: "宣传广告", count: 1191, days: 30 },
-      { region: "鄂城区", dept: "应急", type: "人员告警", count: 864, days: 7 },
-      { region: "梁子湖区", dept: "生态环保", type: "扬尘告警", count: 731, days: 90 }
-    ];
-
-    const hotlineStats = {
-      department: {
-        title: "按部门统计",
-        segments: [
-          { name: "城管局", value: 859, color: "#2b8ef0" },
-          { name: "市场监管局", value: 644, color: "#53b57f" },
-          { name: "公安局", value: 310, color: "#f2b24d" },
-          { name: "住建局", value: 262, color: "#7c9cff" },
-          { name: "其他", value: 311, color: "#d7dee8" }
-        ]
-      },
-      type: {
-        title: "按类型统计",
-        segments: [
-          { name: "投诉类", value: 954, color: "#2b8ef0" },
-          { name: "建议类", value: 596, color: "#53b57f" },
-          { name: "咨询类", value: 453, color: "#f2b24d" },
-          { name: "求助类", value: 310, color: "#7c9cff" },
-          { name: "其他", value: 73, color: "#d7dee8" }
-        ]
-      }
-    };
-
-    const hotlineRangeMetrics = {
-      "2026-03-16_2026-04-15": { total: 2386, today: 156, closeRate: "73%", satisfy: "94%" },
-      "2026-04-01_2026-04-15": { total: 1182, today: 98, closeRate: "76%", satisfy: "95%" },
-      "2026-03-01_2026-04-15": { total: 3214, today: 156, closeRate: "71%", satisfy: "93%" }
-    };
-
-    const trendDataMap = {
-      "7": {
-        labels: ["04-09", "04-10", "04-11", "04-12", "04-13", "04-14", "04-15"],
-        values: [68, 92, 84, 136, 122, 162, 148],
-        note: [
-          "峰值出现在 04-14，预警数量 162 件，主要集中在城管与应急场景。",
-          "近 7 日整体呈波动上升趋势，建议持续关注节前人流密集区域风险变化。"
-        ]
-      },
-      "30": {
-        labels: ["03-17", "03-22", "03-27", "04-01", "04-06", "04-11", "04-15"],
-        values: [74, 88, 96, 104, 118, 142, 148],
-        note: [
-          "近 30 日预警总量稳步抬升，4 月上旬开始增幅明显。",
-          "建议结合节假日前巡查计划，对重点商圈和交通枢纽提前布防。"
-        ]
-      },
-      "90": {
-        labels: ["01月", "02月", "03月", "04月", "05月", "06月", "07月"],
-        values: [52, 66, 91, 128, 136, 149, 157],
-        note: [
-          "近三个月风险预警总体呈上升态势，季节性和活动性因素叠加明显。",
-          "建议按月复盘高发类型，对持续增长的预警类别做专项整治。"
-        ]
-      }
-    };
-
-    const dispatchGroups = {
-      warning: [
-        { key: "warningList", label: "预警列表" },
-        { key: "warningQuery", label: "预警查询" },
-        { key: "warningInfo", label: "超时办理事件列表" }
       ],
-      mine: [
-        { key: "todo", label: "我的待办" },
-        { key: "done", label: "已办事件" },
-        { key: "closed", label: "办结事件" },
-        { key: "evaluate", label: "评价事件" }
-      ],
-      subordinate: [
-        { key: "subTodo", label: "下辖待办事件" },
-        { key: "subClosed", label: "下辖办结事件" },
-        { key: "subOvertime", label: "超时事件" },
-        { key: "subStats", label: "事件统计" }
-      ],
-      supervise: [
-        { key: "superviseCenter", label: "督办事件中心" },
-        { key: "superviseProcessing", label: "处置中督办" },
-        { key: "superviseAudit", label: "督办审核" }
-      ],
-      search: [
-        { key: "generalSearch", label: "综合查询" }
-      ],
-      smart: [
-        { key: "modelList", label: "算法模型" },
-        { key: "warningInfo", label: "预警信息" }
+      queryConditions: activeFields.slice(0, 2).map(f => ({
+        id: uid(), field: f.key, condType: 'contains', widgetType: 'text', defaultVal: '', required: false
+      })),
+      actionButtons: [
+        { id: uid(), name: '查看详情', btnType: 'primary', position: 'list-row', behavior: 'open-detail' },
+        { id: uid(), name: '编辑', btnType: 'secondary', position: 'list-row', behavior: 'goto-edit' },
+        { id: uid(), name: '删除', btnType: 'danger', position: 'list-row', behavior: 'call-api' },
       ]
     };
+  }
+}
 
-    const dispatchDefaultView = {
-      warning: "warningList",
-      mine: "todo",
-      subordinate: "subTodo",
-      supervise: "superviseCenter",
-      search: "generalSearch",
-      smart: "modelList"
-    };
+function getStd(id) { return standards.find(s => s.id === id); }
+function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
+function uid() { return 'u' + Math.random().toString(36).slice(2, 9); }
 
-    const dispatchViewMeta = {
-      todo: { title: "我的待办", crumb: ["首页", "指挥调度", "我的事件", "我的待办"], allowCreate: true, createLabel: "+ 新增", filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "紧急度：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号 / 关键词", batch: ["批量转办", "批量归档"] },
-      done: { title: "已办事件", crumb: ["首页", "指挥调度", "我的事件", "已办事件"], allowCreate: false, filters: ["事件类型：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "完成时限：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号 / 关键词", batch: ["批量办结", "批量归档"] },
-      closed: { title: "办结事件", crumb: ["首页", "指挥调度", "我的事件", "办结事件"], allowCreate: false, filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "办结状态：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号", batch: ["批量详情"] },
-      evaluate: { title: "评价事件", crumb: ["首页", "指挥调度", "我的事件", "评价事件"], allowCreate: false, filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "评价状态：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号", batch: ["批量评价"] },
-      subTodo: { title: "下辖待办事件", crumb: ["首页", "指挥调度", "下辖事件", "下辖待办事件"], allowCreate: false, filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "紧急度：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号 / 单位", batch: [] },
-      subClosed: { title: "下辖办结事件", crumb: ["首页", "指挥调度", "下辖事件", "下辖办结事件"], allowCreate: false, filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "紧急度：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号 / 单位", batch: [] },
-      subOvertime: { title: "超时事件", crumb: ["首页", "指挥调度", "下辖事件", "超时事件"], allowCreate: false, filters: ["来源部门：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "紧急度：全部 <span>V</span>", ""], keyword: "请输入事件标题 / 编号 / 单位", batch: [] },
-      subStats: { title: "事件统计", crumb: ["首页", "指挥调度", "下辖事件", "事件统计"], allowCreate: false, filters: ["2026-03-01 至 2026-04-02", "", "", ""], keyword: "", batch: [] },
-      warningList: { title: "预警列表", crumb: ["首页", "指挥调度", "预警管理", "预警列表"], allowCreate: false, filters: ["发布时间：2026-04-01 至 2026-04-15", "处置状态：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "督办标签：全部 <span>V</span>"], keyword: "请输入预警描述 / 地点 / 关键词", batch: [] },
-      warningQuery: { title: "预警查询", crumb: ["首页", "指挥调度", "预警管理", "预警查询"], allowCreate: false, filters: ["预警类型：全部 <span>V</span>", "预警等级：全部 <span>V</span>", "预警来源：全部 <span>V</span>", "发生区域：___________"], keyword: "2026-04-01 至 2026-04-02", keywordLabel: "时间范围：", batch: [] },
-      warningInfo: { title: "预警信息 > 超时办理事件列表", crumb: ["首页", "指挥调度", "智能预警", "预警信息"], allowCreate: false, filters: ["预警类型 <span>V</span>", "责任部门 <span>V</span>", "超时范围 <span>V</span>", ""], keyword: "", batch: [] },
-      modelList: { title: "算法模型 > 列表", crumb: ["首页", "指挥调度", "智能预警", "算法模型"], allowCreate: true, createLabel: "+ 新增", filters: ["模型名称__________", "模型类型 <span>V</span>", "状态 <span>V</span>", ""], keyword: "", batch: [] },
-      superviseCenter: { title: "督办事件中心 > 列表", crumb: ["首页", "指挥调度", "事件督办", "督办事件中心"], allowCreate: true, createLabel: "+ 新增", filters: ["事件名称：____________", "事件类型：全部 <span>V</span>", "责任部门：全部 <span>V</span>", "处置状态：全部 <span>V</span>"], keyword: "", batch: [] },
-      superviseProcessing: { title: "处置中督办", crumb: ["首页", "指挥调度", "事件督办", "处置中督办"], allowCreate: false, filters: ["事件名称：____________", "事件类型：全部 <span>V</span>", "责任部门：全部 <span>V</span>", ""], keyword: "", batch: [] },
-      superviseAudit: { title: "督办审核 > 待审核列表", crumb: ["首页", "指挥调度", "事件督办", "督办审核"], allowCreate: false, filters: ["责任部门 <span>V</span>", "审核状态 <span>V</span>", "", ""], keyword: "", batch: [] },
-      generalSearch: { title: "综合查询", crumb: ["首页", "指挥调度", "综合查询"], allowCreate: false, filters: [], keyword: "", batch: [] }
-    };
-
-    const dispatchEventData = {
-      todo: [
-        ["EV001", "服务器CPU告警", "技术中心", "技术中心", "high", "高", "04-01 09:00"],
-        ["EV002", "网络波动影响业务", "技术中心", "网络部", "high", "高", "04-01 10:30"],
-        ["EV003", "用户反馈登录失败", "客服部", "技术部", "medium", "中", "03-31 18:00"],
-        ["EV004", "消防设施巡检异常", "消防科", "消防科", "low", "低", "03-30 14:00"],
-        ["EV005", "城管投诉事件", "城管局", "城管局", "medium", "中", "03-29 11:00"]
-      ],
-      done: [
-        ["EV001", "服务器CPU告警", "技术中心", "技术中心", "high", "高", "04-01 09:00", "04-01 14:30"],
-        ["EV002", "网络波动影响业务", "技术中心", "网络部", "high", "高", "04-01 10:30", "04-01 15:20"],
-        ["EV003", "用户反馈登录失败", "客服部", "技术部", "medium", "中", "03-31 18:00", "04-01 09:15"]
-      ],
-      closed: [
-        ["EV001", "服务器CPU告警", "技术中心", "技术中心", "high", "高", "04-03 10:00"],
-        ["EV002", "网络波动影响业务", "技术中心", "网络部", "high", "高", "04-03 14:20"],
-        ["EV003", "用户反馈登录失败", "客服部", "技术部", "medium", "中", "04-02 16:30"]
-      ],
-      evaluate: [
-        ["EV001", "服务器CPU告警", "技术中心", "技术中心", "high", "高", "04-03 10:00", "未评价", "评价"],
-        ["EV002", "网络波动影响业务", "技术中心", "网络部", "high", "高", "04-03 14:20", "已评价", "查看评价"],
-        ["EV003", "用户反馈登录失败", "客服部", "技术部", "medium", "中", "04-02 16:30", "未评价", "评价"]
-      ],
-      subTodo: [
-        ["EV001", "服务器告警", "技术中心", "技术部", "high", "高", "2026-04-03 18:00", "处理中"],
-        ["EV002", "网络波动", "运维部", "网络部", "medium", "中", "2026-04-03 16:00", "待分配"],
-        ["EV003", "消防隐患", "消防科", "消防大队", "low", "低", "2026-04-04 10:00", "处理中"]
-      ],
-      subClosed: [
-        ["EV011", "监控异常", "技术中心", "技术部", "medium", "中", "2026-04-01 12:00", "已完成"],
-        ["EV012", "道路占道", "城管局", "执法队", "low", "低", "2026-04-01 15:00", "已完成"]
-      ],
-      subOvertime: [
-        ["EV021", "设备停机", "运维部", "设备部", "high", "高", "2026-04-02 09:00", "已超时"],
-        ["EV022", "消防主机离线", "消防科", "消防大队", "high", "高", "2026-04-02 11:30", "已超时"]
-      ],
-      warningList: [
-        ["防溺水", "东湖公园有儿童靠近水域，存在溺水风险", "东湖公园", "2026-04-02 08:30", "待处置"],
-        ["秸秆焚烧", "北郊农田发现大面积秸秆焚烧烟雾", "北郊农田", "2026-04-02 07:15", "处置中"],
-        ["消防", "幸福小区楼道电动车起火，浓烟较大", "幸福小区", "2026-04-02 06:50", "待核实"],
-        ["城管事件", "人民路流动摊贩占道经营，堵塞交通", "人民路", "2026-04-01 22:10", "已处置"]
-      ],
-      warningQuery: [
-        ["防溺水", "东湖公园有儿童靠近水域", "东湖公园", "04-02 08:30", "待处置", "水利局"],
-        ["秸秆焚烧", "北郊农田大面积焚烧烟雾", "北郊农田", "04-02 07:15", "处置中", "环保局"],
-        ["消防", "幸福小区楼道电动车起火", "幸福小区", "04-02 06:50", "待核实", "消防支队"],
-        ["城管事件", "人民路摊贩占道经营", "人民路", "04-01 22:10", "已处置", "城管局"]
-      ],
-      warningInfo: [
-        ["YJ001", "东湖公园防溺水隐患", "水利局", "04-02 12:00", "2小时", "待处置"],
-        ["YJ002", "北郊秸秆焚烧烟雾", "环保局", "04-02 10:00", "4小时", "处置中"],
-        ["YJ003", "幸福小区消防火情", "消防大队", "04-02 08:00", "6小时", "待复核"],
-        ["YJ004", "人民路摊贩占道", "城管局", "04-01 18:00", "24小时", "已超时"]
-      ],
-      modelList: [
-        ["防溺水检测模型", "图像识别", "2.0", "启用", "04-01"],
-        ["秸秆焚烧识别", "卫星热异常", "1.5", "启用", "03-28"],
-        ["消防烟雾预警", "视频分析", "1.2", "测试", "03-25"],
-        ["城管事件挖掘", "NLP", "1.0", "停用", "03-20"]
-      ],
-      superviseCenter: [
-        ["DJ001", "东湖防溺水隐患", "防溺水", "水利局", "紧急", "处置中"],
-        ["DJ002", "北郊秸秆焚烧", "秸秆焚烧", "环保局", "领导交办", "待处置"],
-        ["DJ003", "幸福小区消防火情", "消防", "消防大队", "超时", "待复核"]
-      ],
-      superviseProcessing: [
-        ["DJ011", "北湖桥梁巡检异常", "市政事件", "市政科", "紧急", "处置中"],
-        ["DJ012", "化工园气体告警", "应急", "应急局", "领导交办", "处置中"]
-      ],
-      superviseAudit: [
-        ["DJ001", "东湖防溺水隐患", "水利局", "04-03 14:00", "待审核", "审核"],
-        ["DJ003", "幸福小区消防火情", "消防大队", "04-02 16:00", "待审核", "审核"],
-        ["DJ005", "东湖水位超警戒", "水务局", "04-01 09:00", "已通过", "查看"]
-      ]
-    };
-
-    let currentScene = "全部场景";
-    let alarmSort = { key: "count", dir: "desc" };
-    let deviceSort = { key: "rate", dir: "desc" };
-    let hotlineMode = "department";
-    let trendRange = "7";
-    let currentTopView = "warning";
-    let currentDispatchView = "warningList";
-    let alarmFilters = {
-      dept: "全部",
-      type: "全部",
-      status: "全部",
-      region: "全部",
-      name: "",
-      start: "2026-04-01",
-      end: "2026-04-15"
-    };
-
-    const overviewCards = document.getElementById("overviewCards");
-    const alarmTableBody = document.getElementById("alarmTableBody");
-    const alarmTableHead = document.getElementById("alarmTableHead");
-    const alarmEventCount = document.getElementById("alarmEventCount");
-    const deviceTableBody = document.getElementById("deviceTableBody");
-    const hotEventList = document.getElementById("hotEventList");
-    const hotEventNote = document.getElementById("hotEventNote");
-    const hotRegionFilter = document.getElementById("hotRegionFilter");
-    const hotDeptFilter = document.getElementById("hotDeptFilter");
-    const hotTimeFilter = document.getElementById("hotTimeFilter");
-    const hotSearchInput = document.getElementById("hotSearchInput");
-    const hotSearchBtn = document.getElementById("hotSearchBtn");
-    const hotlineStart = document.getElementById("hotlineStart");
-    const hotlineEnd = document.getElementById("hotlineEnd");
-    const hotlineApply = document.getElementById("hotlineApply");
-    const hotlineDeptTab = document.getElementById("hotlineDeptTab");
-    const hotlineTypeTab = document.getElementById("hotlineTypeTab");
-    const hotlineTitle = document.getElementById("hotlineTitle");
-    const hotlineMeta = document.getElementById("hotlineMeta");
-    const hotlineTotal = document.getElementById("hotlineTotal");
-    const hotlinePie = document.getElementById("hotlinePie");
-    const hotlineLegend = document.getElementById("hotlineLegend");
-    const alarmSortCount = document.getElementById("alarmSortCount");
-    const alarmSortTime = document.getElementById("alarmSortTime");
-    const alarmDeptFilter = document.getElementById("alarmDeptFilter");
-    const alarmTypeFilter = document.getElementById("alarmTypeFilter");
-    const alarmStatusFilter = document.getElementById("alarmStatusFilter");
-    const alarmRegionFilter = document.getElementById("alarmRegionFilter");
-    const alarmNameFilter = document.getElementById("alarmNameFilter");
-    const alarmStartDate = document.getElementById("alarmStartDate");
-    const alarmEndDate = document.getElementById("alarmEndDate");
-    const alarmQueryBtn = document.getElementById("alarmQueryBtn");
-    const alarmResetBtn = document.getElementById("alarmResetBtn");
-    const deviceSortTotal = document.getElementById("deviceSortTotal");
-    const deviceSortRate = document.getElementById("deviceSortRate");
-    const trendSvg = document.getElementById("trendSvg");
-    const trendNote = document.getElementById("trendNote");
-    const trendBadges = Array.from(document.querySelectorAll(".trend-badge"));
-    const sceneChip = document.getElementById("sceneChip");
-    const overviewMenuItem = document.querySelector('.menu-item[data-direct-view="overview"]');
-    const groupButtons = Array.from(document.querySelectorAll("[data-toggle-group]"));
-    const subMenuItems = Array.from(document.querySelectorAll("[data-sub-view]"));
-    const directDispatchItems = Array.from(document.querySelectorAll("[data-direct-dispatch]"));
-    const menuGroups = Array.from(document.querySelectorAll(".menu-group[data-group]"));
-    const overviewView = document.getElementById("overviewView");
-    const dispatchView = document.getElementById("dispatchView");
-    const fireDetailView = document.getElementById("fireDetailView");
-    const backToOverview = document.getElementById("backToOverview");
-    const dispatchTabs = document.getElementById("dispatchTabs");
-    const dispatchTitle = document.getElementById("dispatchTitle");
-    const dispatchCrumb = document.getElementById("dispatchCrumb");
-    const dispatchHead = document.getElementById("dispatchHead");
-    const dispatchList = document.getElementById("dispatchList");
-    const dispatchDetail = document.getElementById("dispatchDetail");
-    const dispatchRecordText = document.getElementById("dispatchRecordText");
-    const dispatchToolbar = document.getElementById("dispatchToolbar");
-    const dispatchTableWrap = document.getElementById("dispatchTableWrap");
-    const dispatchFooter = document.getElementById("dispatchFooter");
-    const dispatchSearchRow = document.getElementById("dispatchSearchRow");
-    const dispatchFilterLabel = document.getElementById("dispatchFilterLabel");
-    const dispatchFilterOne = document.getElementById("dispatchFilterOne");
-    const dispatchFilterTwo = document.getElementById("dispatchFilterTwo");
-    const dispatchFilterThree = document.getElementById("dispatchFilterThree");
-    const dispatchFilterFour = document.getElementById("dispatchFilterFour");
-    const dispatchKeyword = document.getElementById("dispatchKeyword");
-    const dispatchCreateBtn = document.getElementById("dispatchCreateBtn");
-    const dispatchHeadActions = document.getElementById("dispatchHeadActions");
-    const dispatchBatchRow = document.getElementById("dispatchBatchRow");
-    const dispatchBatchActions = document.getElementById("dispatchBatchActions");
-    const dispatchModal = document.getElementById("dispatchModal");
-    const dispatchModalTitle = document.getElementById("dispatchModalTitle");
-    const dispatchModalBody = document.getElementById("dispatchModalBody");
-    const dispatchModalClose = document.getElementById("dispatchModalClose");
-    const messageRemind = document.getElementById("messageRemind");
-    const messagePopover = document.getElementById("messagePopover");
-    const messageTodoLink = document.getElementById("messageTodoLink");
-    const messageAuditLink = document.getElementById("messageAuditLink");
-
-    function formatNumber(num) {
-      return Number(num).toLocaleString("zh-CN");
-    }
-
-    function renderOverview() {
-      const data = overviewScenes[currentScene];
-      sceneChip.value = currentScene;
-      overviewCards.innerHTML = Object.entries(data.cards).map(([title, items]) => `
-        <div class="card">
-          <div class="card-title">${title}</div>
-          <div class="list">
-            ${items.map(([name, value]) => `
-              <div class="item">
-                <div class="item-main"><span>${name}</span><strong>${value}</strong></div>
-              </div>
-            `).join("")}
-          </div>
+// ============================================================
+// 渲染左侧列表
+// ============================================================
+function renderSidebar() {
+  const list = document.getElementById('sidebarList');
+  list.innerHTML = standards.map(s => `
+    <div class="px-3 py-1.5">
+      <div class="flex items-center gap-2 px-3 py-2.5 rounded-lg cursor-pointer transition-colors
+                  ${s.id === currentId ? 'bg-blue-50' : 'hover:bg-gray-50'}
+                  ${s.id === currentId ? 'border-l-2 border-blue-500 pl-2.5' : ''}"
+           onclick="selectStandard('${s.id}')">
+        <div class="w-6 h-6 rounded-md bg-blue-100 flex items-center justify-center shrink-0">
+          <span class="text-blue-600 text-xs font-bold">${s.name[0]}</span>
         </div>
-      `).join("");
-    }
-
-    function renderTrend() {
-      const data = trendDataMap[trendRange];
-      const width = 340;
-      const height = 220;
-      const left = 36;
-      const right = 320;
-      const bottom = 198;
-      const top = 30;
-      const max = Math.max(...data.values);
-      const min = Math.min(...data.values);
-      const range = Math.max(max - min, 20);
-      const points = data.values.map((value, index) => {
-        const x = left + ((right - left) / (data.values.length - 1 || 1)) * index;
-        const y = bottom - ((value - min) / range) * (bottom - top);
-        return { x, y, value };
-      });
-      const linePath = points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x} ${p.y}`).join(" ");
-      const areaPath = `${linePath} L${right} ${bottom} L${left} ${bottom} Z`;
-      const yTicks = [max, Math.round(max - range / 3), Math.round(max - (range * 2) / 3), min];
-      const gridYs = [top, top + (bottom - top) / 3, top + (bottom - top) * 2 / 3, bottom - 30, bottom];
-      trendSvg.innerHTML = `
-        <defs>
-          <linearGradient id="trendFill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#4ea8ef" stop-opacity="0.28"></stop>
-            <stop offset="100%" stop-color="#4ea8ef" stop-opacity="0.03"></stop>
-          </linearGradient>
-        </defs>
-        ${gridYs.map(y => `<line class="trend-grid" x1="${left}" y1="${y}" x2="${right}" y2="${y}"></line>`).join("")}
-        <path class="trend-area" d="${areaPath}"></path>
-        <path class="trend-line" d="${linePath}"></path>
-        ${points.map(p => `<circle class="trend-point" cx="${p.x}" cy="${p.y}" r="4"></circle>`).join("")}
-        ${yTicks.map((tick, idx) => `<text class="trend-axis" x="8" y="${gridYs[idx] + 4}">${tick}</text>`).join("")}
-        ${data.labels.map((label, idx) => `<text class="trend-axis" x="${points[idx].x - 10}" y="215">${label}</text>`).join("")}
-      `;
-      trendNote.innerHTML = data.note.map(item => `<div>${item}</div>`).join("");
-      trendBadges.forEach(badge => badge.classList.toggle("active", badge.dataset.range === trendRange));
-    }
-
-    function renderAlarmTable() {
-      if (alarmFilters.dept !== "全部") {
-        const filtered = alarmEventRows
-          .filter(item => item.dept === alarmFilters.dept)
-          .filter(item => alarmFilters.type === "全部" || item.type === alarmFilters.type)
-          .filter(item => alarmFilters.status === "全部" || item.status === alarmFilters.status)
-          .filter(item => alarmFilters.region === "全部" || item.region === alarmFilters.region)
-          .filter(item => !alarmFilters.name || item.eventName.includes(alarmFilters.name))
-          .filter(item => {
-            const current = item.happenTime.slice(0, 10);
-            return (!alarmFilters.start || current >= alarmFilters.start) && (!alarmFilters.end || current <= alarmFilters.end);
-          })
-          .sort((a, b) => b.happenTime.localeCompare(a.happenTime));
-        alarmEventCount.style.display = "inline-flex";
-        alarmEventCount.textContent = `事件总数：${filtered.length}`;
-        alarmTableHead.innerHTML = `<tr><th>事件类型</th><th>处置状态</th><th>发生区域</th><th>事件名称</th><th>发生时间</th><th>操作</th></tr>`;
-        alarmTableBody.innerHTML = filtered.length ? filtered.map(item => `
-          <tr>
-            <td>${item.type}</td>
-            <td>${item.status}</td>
-            <td>${item.region}</td>
-            <td>${item.eventName}</td>
-            <td>${item.happenTime}</td>
-            <td><span class="dispatch-link" data-alarm-detail="${item.dept}" data-event-name="${item.eventName}">详情</span></td>
-          </tr>
-        `).join("") : `<tr><td colspan="6" class="muted" style="text-align:center;padding:28px 10px;">当前筛选条件下暂无具体事件。</td></tr>`;
-        alarmSortCount.className = "sort-mark";
-        alarmSortTime.className = "sort-mark";
-        alarmTableBody.querySelectorAll("[data-alarm-detail]").forEach(btn => {
-          btn.addEventListener("click", () => {
-            const dept = btn.dataset.alarmDetail;
-            const eventName = btn.dataset.eventName;
-            if (dept === "消防") {
-              switchView("fire-detail");
-              return;
-            }
-            openDispatchModal(`${dept} / ${eventName}`, `
-              <div class="modal-form-box">
-                <div class="summary-box">当前事件属于“${dept}”场景，已预留详情操作入口；消防场景已接入专用处置详情页，其他场景可继续按同样方式扩展。</div>
-              </div>
-            `);
-          });
-        });
-        return;
-      }
-      alarmEventCount.style.display = "none";
-      const rows = [...alarmRows].sort((a, b) => {
-        const av = a[alarmSort.key], bv = b[alarmSort.key];
-        return alarmSort.dir === "asc" ? av - bv : bv - av;
-      });
-      const totalCount = rows.reduce((s, r) => s + r.count, 0);
-      const avgTime = Math.round(rows.reduce((s, r) => s + r.time, 0) / rows.length);
-      alarmTableHead.innerHTML = `<tr><th>部门</th><th><span class="th-filter">事件数<span class="sort-mark active-down" id="alarmSortCount"><i class="up"></i><i class="down"></i></span></span></th><th>环比</th><th><span class="th-filter">平均处置时间<span class="sort-mark active-up" id="alarmSortTime"><i class="up"></i><i class="down"></i></span></span></th><th>环比</th><th>占比条形图</th><th>处置率</th></tr>`;
-      alarmTableBody.innerHTML = rows.map(r => `
-        <tr>
-          <td>${r.dept}</td>
-          <td>${formatNumber(r.count)}</td>
-          <td>${r.ratio}</td>
-          <td>${r.time} min</td>
-          <td>${r.timeRatio}</td>
-          <td><div class="barrow"><div class="track"><div class="fill" style="width:${Math.max(r.share * 2, 3)}%"></div></div><span>${r.share}%</span></div></td>
-          <td>${r.disposal}</td>
-        </tr>
-      `).join("") + `
-        <tr class="strong-row">
-          <td>总计</td>
-          <td>${formatNumber(totalCount)}</td>
-          <td>↓48.2%</td>
-          <td>${avgTime} min</td>
-          <td>↓16.5%</td>
-          <td>整体处置率：92.4% ↑5.2%</td>
-          <td></td>
-        </tr>
-      `;
-      const countMark = document.getElementById("alarmSortCount");
-      const timeMark = document.getElementById("alarmSortTime");
-      countMark.className = "sort-mark" + (alarmSort.key === "count" ? ` active-${alarmSort.dir}` : "");
-      timeMark.className = "sort-mark" + (alarmSort.key === "time" ? ` active-${alarmSort.dir}` : "");
-      countMark.addEventListener("click", () => { toggleSort(alarmSort, "count"); renderAlarmTable(); });
-      timeMark.addEventListener("click", () => { toggleSort(alarmSort, "time"); renderAlarmTable(); });
-    }
-
-    function applyAlarmFilters() {
-      alarmFilters = {
-        dept: alarmDeptFilter.value,
-        type: alarmTypeFilter.value,
-        status: alarmStatusFilter.value,
-        region: alarmRegionFilter.value,
-        name: alarmNameFilter.value.trim(),
-        start: alarmStartDate.value,
-        end: alarmEndDate.value
-      };
-      renderAlarmTable();
-    }
-
-    function bindAlarmFilterEvents() {
-      [alarmDeptFilter, alarmTypeFilter, alarmStatusFilter, alarmRegionFilter].forEach(el => {
-        el.addEventListener("change", applyAlarmFilters);
-      });
-      [alarmNameFilter, alarmStartDate, alarmEndDate].forEach(el => {
-        el.addEventListener("change", applyAlarmFilters);
-      });
-      alarmNameFilter.addEventListener("keydown", (e) => {
-        if (e.key === "Enter") applyAlarmFilters();
-      });
-    }
-
-    function resetAlarmFilters() {
-      alarmDeptFilter.value = "全部";
-      alarmTypeFilter.value = "全部";
-      alarmStatusFilter.value = "全部";
-      alarmRegionFilter.value = "全部";
-      alarmNameFilter.value = "";
-      alarmStartDate.value = "2026-04-01";
-      alarmEndDate.value = "2026-04-15";
-      alarmFilters = {
-        dept: "全部",
-        type: "全部",
-        status: "全部",
-        region: "全部",
-        name: "",
-        start: "2026-04-01",
-        end: "2026-04-15"
-      };
-      renderAlarmTable();
-    }
-
-    function renderDeviceTable() {
-      const rows = [...deviceRows].sort((a, b) => {
-        const av = a[deviceSort.key], bv = b[deviceSort.key];
-        return deviceSort.dir === "asc" ? av - bv : bv - av;
-      });
-      const total = rows.reduce((s, r) => s + r.total, 0);
-      const online = rows.reduce((s, r) => s + r.online, 0);
-      const offline = rows.reduce((s, r) => s + r.offline, 0);
-      const rate = ((online / total) * 100).toFixed(1);
-      deviceTableBody.innerHTML = rows.map(r => `
-        <tr><td>${r.name}</td><td>${formatNumber(r.total)}</td><td>${formatNumber(r.online)}</td><td>${formatNumber(r.offline)}</td><td>${r.rate.toFixed(1)}%</td></tr>
-      `).join("") + `<tr class="strong-row"><td>合计</td><td>${formatNumber(total)}</td><td>${formatNumber(online)}</td><td>${formatNumber(offline)}</td><td>${rate}%</td></tr>`;
-      deviceSortTotal.className = "sort-mark" + (deviceSort.key === "total" ? ` active-${deviceSort.dir}` : "");
-      deviceSortRate.className = "sort-mark" + (deviceSort.key === "rate" ? ` active-${deviceSort.dir}` : "");
-    }
-
-    function renderHotEvents() {
-      const region = hotRegionFilter.value;
-      const dept = hotDeptFilter.value;
-      const days = Number(hotTimeFilter.value);
-      const keyword = hotSearchInput.value.trim();
-      const filtered = hotEvents
-        .filter(item => region === "全部" || item.region === region)
-        .filter(item => dept === "全部" || item.dept === dept)
-        .filter(item => item.days <= days)
-        .filter(item => !keyword || item.type.includes(keyword))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 5);
-      const max = filtered[0] ? filtered[0].count : 1;
-      const rowsHtml = filtered.map((item, idx) => `
-        <div class="top-row"><span>${idx + 1}</span><span>${item.dept}</span><strong>${item.type}</strong><span>${formatNumber(item.count)}</span><div class="track"><div class="fill" style="width:${Math.max((item.count / max) * 100, 8)}%"></div></div></div>
-      `).join("");
-      const head = `<div class="top-head"><span>序号</span><span>部门</span><span>事件类型</span><span>发生次数</span><span>趋势条形图</span></div>`;
-      hotEventList.innerHTML = head + (rowsHtml || `<div class="note">当前筛选条件下暂无事件数据。</div>`);
-      const cityMngShare = filtered.length ? Math.round(filtered.filter(i => i.dept === "城管").reduce((s, i) => s + i.count, 0) / filtered.reduce((s, i) => s + i.count, 0) * 100) : 0;
-      hotEventNote.textContent = filtered.length
-        ? `提示：当前筛选下最高频事件为“${filtered[0].type}”，城管类事件占比约 ${cityMngShare}% ，建议结合筛选结果增派巡查力量。`
-        : "提示：当前筛选条件下没有匹配事件，可调整地区、部门、时间或关键词。";
-    }
-
-    function renderHotline() {
-      const start = hotlineStart.value;
-      const end = hotlineEnd.value;
-      const key = `${start}_${end}`;
-      const metrics = hotlineRangeMetrics[key] || hotlineRangeMetrics["2026-03-16_2026-04-15"];
-      const dataset = hotlineStats[hotlineMode];
-      const total = dataset.segments.reduce((s, item) => s + item.value, 0);
-      hotlineTitle.textContent = `${dataset.title}（工单总量${total}件）`;
-      hotlineMeta.textContent = `今日工单 ${metrics.today}件　办结率 ${metrics.closeRate}　满意度 ${metrics.satisfy}`;
-      hotlineTotal.textContent = total;
-      let current = 0;
-      hotlinePie.style.setProperty("--pie-stops", dataset.segments.map(item => {
-        const startPct = current / total * 100;
-        current += item.value;
-        const endPct = current / total * 100;
-        return `${item.color} ${startPct}% ${endPct}%`;
-      }).join(", "));
-      hotlineLegend.innerHTML = dataset.segments.map(item => {
-        const pct = Math.round(item.value / total * 100);
-        return `<div class="legend-row"><span class="legend-dot" style="background:${item.color}"></span><strong>${item.name}</strong><span>${pct}%</span><span>${item.value}件</span></div>`;
-      }).join("");
-      hotlineDeptTab.classList.toggle("active", hotlineMode === "department");
-      hotlineTypeTab.classList.toggle("active", hotlineMode === "type");
-    }
-
-    function severityChip(levelText) {
-      const cls = levelText === "高" ? "high" : levelText === "中" ? "medium" : "low";
-      return `<span class="severity-chip ${cls}">${levelText}</span>`;
-    }
-
-    function statusChip(status) {
-      const cls = /已|完成|通过|启用/.test(status) ? "done" : /处置中|处理中|测试/.test(status) ? "process" : "pending";
-      return `<span class="status-chip ${cls}">${status}</span>`;
-    }
-
-    function renderDispatchTabs(topKey) {
-      const tabs = dispatchGroups[topKey] || [];
-      dispatchTabs.innerHTML = tabs.map(tab => `<button class="dispatch-tab ${tab.key === currentDispatchView ? "active" : ""}" data-dispatch-tab="${tab.key}" type="button">${tab.label}</button>`).join("");
-      dispatchTabs.querySelectorAll("[data-dispatch-tab]").forEach(btn => {
-        btn.addEventListener("click", () => {
-          currentDispatchView = btn.dataset.dispatchTab;
-          renderDispatchModule(currentDispatchView);
-        });
-      });
-    }
-
-    function renderDispatchToolbar(meta) {
-      if (meta.title === "综合查询") {
-        dispatchToolbar.style.display = "none";
-        return;
-      }
-      dispatchToolbar.style.display = "grid";
-      dispatchFilterLabel.textContent = currentDispatchView === "subStats" ? "统计时间：" : "筛选：";
-      dispatchFilterOne.innerHTML = meta.filters[0] || "";
-      dispatchFilterTwo.innerHTML = meta.filters[1] || "";
-      dispatchFilterThree.innerHTML = meta.filters[2] || "";
-      dispatchFilterFour.innerHTML = meta.filters[3] || "";
-      dispatchFilterTwo.style.display = meta.filters[1] ? "inline-flex" : "none";
-      dispatchFilterThree.style.display = meta.filters[2] ? "inline-flex" : "none";
-      dispatchFilterFour.style.display = meta.filters[3] ? "inline-flex" : "none";
-      dispatchSearchRow.style.display = meta.keyword ? "flex" : "none";
-      dispatchSearchRow.querySelector(".search-label").textContent = meta.keywordLabel || "搜索：";
-      dispatchKeyword.textContent = meta.keyword || "";
-      dispatchCreateBtn.textContent = meta.createLabel || `+ 新建`;
-      dispatchHeadActions.style.display = meta.allowCreate === false ? "none" : "flex";
-      dispatchBatchActions.innerHTML = (meta.batch || []).map(text => `<button class="btn" data-batch-action="${text}" type="button">${text}</button>`).join("");
-      dispatchBatchRow.style.display = meta.batch && meta.batch.length ? "flex" : "none";
-    }
-
-    function findParentGroupByView(viewKey) {
-      return Object.entries(dispatchGroups).find(([, items]) => items.some(item => item.key === viewKey))?.[0] || "warning";
-    }
-
-    function openDispatchModal(title, bodyHtml) {
-      dispatchModalTitle.textContent = title;
-      dispatchModalBody.innerHTML = bodyHtml;
-      dispatchModal.classList.add("show");
-    }
-
-    function closeDispatchModal() {
-      dispatchModal.classList.remove("show");
-    }
-
-    function syncSidebarState(groupKey, subView, isOverview = false) {
-      if (overviewMenuItem) overviewMenuItem.classList.toggle("active", isOverview);
-      menuGroups.forEach(group => {
-        const matched = !isOverview && group.dataset.group === groupKey;
-        group.classList.toggle("expanded", matched);
-        const treeBtn = group.querySelector(".tree-item");
-        if (treeBtn) treeBtn.classList.toggle("active", matched);
-      });
-      subMenuItems.forEach(item => item.classList.toggle("current", !isOverview && item.dataset.subView === subView));
-      directDispatchItems.forEach(item => item.classList.toggle("active", !isOverview && item.dataset.directDispatch === subView));
-    }
-
-    function openGroup(groupKey, shouldRender = true) {
-      currentTopView = groupKey;
-      const defaultView = dispatchDefaultView[groupKey] || dispatchGroups[groupKey]?.[0]?.key;
-      currentDispatchView = defaultView;
-      overviewView.classList.remove("active");
-      dispatchView.classList.add("active");
-      syncSidebarState(groupKey, defaultView, false);
-      if (shouldRender) renderDispatchModule(defaultView);
-    }
-
-    function renderDispatchSpecial(viewKey) {
-      if (viewKey === "subStats") {
-        dispatchTableWrap.style.display = "none";
-        dispatchFooter.style.display = "none";
-        dispatchRecordText.textContent = "";
-        dispatchDetail.innerHTML = `
-          <div class="stats-subtitle">各部门任务完成/未完成统计（柱状图/条形示意）</div>
-          <div class="stats-panel">
-            <div class="stats-table">
-              <div class="stats-table-row stats-table-head">
-                <div>部门</div><div>总任务</div><div>完成</div><div>未完成</div><div>完成进度条（完成率）</div>
-              </div>
-              <div class="stats-table-row"><div>技术中心</div><div>25</div><div>18</div><div>7</div><div class="progress-line"><span class="progress-bar">████████░░</span><span>72%</span></div></div>
-              <div class="stats-table-row"><div>运维部</div><div>18</div><div>12</div><div>6</div><div class="progress-line"><span class="progress-bar">██████░░░░</span><span>67%</span></div></div>
-              <div class="stats-table-row"><div>消防大队</div><div>32</div><div>28</div><div>4</div><div class="progress-line"><span class="progress-bar">█████████░</span><span>88%</span></div></div>
-              <div class="stats-table-row"><div>城管局</div><div>20</div><div>15</div><div>5</div><div class="progress-line"><span class="progress-bar">███████░░░</span><span>75%</span></div></div>
-              <div class="stats-table-row"><div>市政科</div><div>14</div><div>9</div><div>5</div><div class="progress-line"><span class="progress-bar">██████░░░░</span><span>64%</span></div></div>
-              <div class="stats-table-row"><div>网络部</div><div>10</div><div>8</div><div>2</div><div class="progress-line"><span class="progress-bar">████████░░</span><span>80%</span></div></div>
-            </div>
-          </div>
-          <div class="stats-subtitle">整体完成率（饼图示意）</div>
-          <div class="stats-panel">
-            <div class="donut-wrap">
-              <div class="donut-chart"><div class="donut-center"><strong>58%</strong><span>整体完成率</span></div></div>
-              <div class="legend-list">
-                <div class="legend-item"><span class="legend-left"><span class="legend-dot"></span><span>完成</span></span><strong>58%</strong></div>
-                <div class="legend-item"><span class="legend-left"><span class="legend-dot pending"></span><span>未完成</span></span><strong>42%</strong></div>
-              </div>
-            </div>
-          </div>
-          <div class="stats-subtitle">按部门统计柱状图</div>
-          <div class="stats-panel">
-            <div class="chart-bars">
-              <div class="chart-bar-row"><div>技术中心</div><div class="chart-track"><div class="chart-fill" style="width:72%;"></div></div><div class="chart-label">18完成 / 7未完成</div></div>
-              <div class="chart-bar-row"><div>运维部</div><div class="chart-track"><div class="chart-fill" style="width:67%;"></div></div><div class="chart-label">12完成 / 6未完成</div></div>
-              <div class="chart-bar-row"><div>消防大队</div><div class="chart-track"><div class="chart-fill" style="width:88%;"></div></div><div class="chart-label">28完成 / 4未完成</div></div>
-              <div class="chart-bar-row"><div>城管局</div><div class="chart-track"><div class="chart-fill" style="width:75%;"></div></div><div class="chart-label">15完成 / 5未完成</div></div>
-              <div class="chart-bar-row"><div>市政科</div><div class="chart-track"><div class="chart-fill" style="width:64%;"></div></div><div class="chart-label">9完成 / 5未完成</div></div>
-              <div class="chart-bar-row"><div>网络部</div><div class="chart-track"><div class="chart-fill" style="width:80%;"></div></div><div class="chart-label">8完成 / 2未完成</div></div>
-            </div>
-          </div>
-        `;
-        return true;
-      }
-
-      if (viewKey === "generalSearch") {
-        dispatchTableWrap.style.display = "none";
-        dispatchFooter.style.display = "none";
-        dispatchRecordText.textContent = "";
-        dispatchDetail.innerHTML = `
-          <div class="record-title">【事件统计】</div>
-          <div class="stats-panel">
-            <div class="summary-list">
-              <div><strong>按事件类型统计：</strong> 防溺水: 12　秸秆焚烧: 8　消防: 15　城管事件: 20　其他: 5</div>
-              <div><strong>按处置状态统计：</strong> 待处置: 18　处置中: 25　已办结: 32　超时: 8</div>
-              <div><strong>按部门统计（TOP5）：</strong> 技术中心: 22　消防大队: 18　城管局: 15　水利局: 10　环保局: 8</div>
-            </div>
-          </div>
-          <div class="record-title">【分类查询】</div>
-          <div class="stats-panel">
-            <div class="query-grid">
-              <div class="query-line"><span>事件名称：</span><span class="input-fake">____________</span><span>事件类型：</span><span class="select-fake">全部 <span>V</span></span></div>
-              <div class="query-line"><span>责任部门：</span><span class="select-fake">全部 <span>V</span></span><span>处置状态：</span><span class="select-fake">全部 <span>V</span></span></div>
-              <div class="query-line"><span>发生区域：</span><span class="input-fake">____________</span><span>时间范围：</span><span class="input-fake">2026-04-01 至 2026-04-03</span></div>
-              <div class="query-line"><span>预警等级：</span><span class="select-fake">全部 <span>V</span></span><span>督办标签：</span><span class="select-fake">全部 <span>V</span></span><button class="btn primary" type="button">查询</button><button class="btn" type="button">重置</button><button class="btn" type="button">导出</button></div>
-            </div>
-          </div>
-          <div class="record-title">查询结果：</div>
-          <div class="stats-panel">
-            <div class="stats-table">
-              <div class="stats-table-row stats-table-head" style="grid-template-columns:.5fr .8fr 1.5fr .8fr .9fr .8fr .8fr .7fr;"><div>序号</div><div>编号</div><div>事件标题</div><div>类型</div><div>责任部门</div><div>状态</div><div>时间</div><div>操作</div></div>
-              <div class="stats-table-row" style="grid-template-columns:.5fr .8fr 1.5fr .8fr .9fr .8fr .8fr .7fr;"><div>1</div><div>EV001</div><div>东湖防溺水隐患</div><div>防溺水</div><div>水利局</div><div>处置中</div><div>04-02</div><div><span class="dispatch-link">详情</span></div></div>
-              <div class="stats-table-row" style="grid-template-columns:.5fr .8fr 1.5fr .8fr .9fr .8fr .8fr .7fr;"><div>2</div><div>EV002</div><div>北郊秸秆焚烧</div><div>秸秆焚烧</div><div>环保局</div><div>待处置</div><div>04-01</div><div><span class="dispatch-link">详情</span></div></div>
-              <div class="stats-table-row" style="grid-template-columns:.5fr .8fr 1.5fr .8fr .9fr .8fr .8fr .7fr;"><div>3</div><div>EV003</div><div>幸福小区消防火情</div><div>消防</div><div>消防大队</div><div>已办结</div><div>03-31</div><div><span class="dispatch-link">详情</span></div></div>
-            </div>
-          </div>
-        `;
-        return true;
-      }
-      return false;
-    }
-
-    function buildDispatchConfig(viewKey) {
-      const meta = dispatchViewMeta[viewKey];
-      const rows = dispatchEventData[viewKey] || [];
-      const withIndex = (head, rowBuilder) => ({
-        head: ["序号", ...head],
-        rows: rows.map((row, index) => [index + 1, ...rowBuilder(row)])
-      });
-      if (viewKey === "warningList") {
-        return withIndex(["预警类型", "预警信息", "位置", "发布时间", "状态", "操作"], row => [row[0], row[1], row[2], row[3], statusChip(row[4]), `<span class="dispatch-link" data-row="${row[1]}" data-action="详情">详情</span>`]);
-      }
-      if (viewKey === "warningQuery") {
-        return withIndex(["预警类型", "预警信息", "位置", "发布时间", "状态", "责任部门", "操作"], row => [row[0], row[1], row[2], row[3], statusChip(row[4]), row[5], `<span class="dispatch-link" data-row="${row[1]}" data-action="详情">详情</span>`]);
-      }
-      if (viewKey === "warningInfo") {
-        return withIndex(["编号", "预警内容", "责任部门", "预警时间", "超时时长", "状态", "操作"], row => [row[0], row[1], row[2], row[3], row[4], statusChip(row[5]), `<span class="dispatch-link" data-row="${row[0]}" data-action="详情">详情</span>`]);
-      }
-      if (viewKey === "modelList") {
-        return withIndex(["模型名称", "模型类型", "版本", "状态", "更新时间", "操作"], row => [row[0], row[1], row[2], statusChip(row[3]), row[4], `<div class="dispatch-actions"><span class="dispatch-link" data-row="${row[0]}" data-action="编辑">编辑</span><span class="dispatch-link" data-row="${row[0]}" data-action="删除">删除</span></div>`]);
-      }
-      if (viewKey === "superviseCenter" || viewKey === "superviseProcessing") {
-        return withIndex(["编号", "事件标题", "事件类型", "责任部门", "督办标签", "状态", "操作"], row => [row[0], row[1], row[2], row[3], row[4], statusChip(row[5]), `<div class="dispatch-actions"><span class="dispatch-link" data-row="${row[0]}" data-action="督办">督办</span><span class="dispatch-link" data-row="${row[0]}" data-action="详情">详情</span></div>`]);
-      }
-      if (viewKey === "superviseAudit") {
-        return withIndex(["编号", "事件标题", "责任部门", "提交时间", "审核状态", "操作"], row => [row[0], row[1], row[2], row[3], statusChip(row[4]), `<span class="dispatch-link" data-row="${row[0]}" data-action="${row[5]}">${row[5]}</span>`]);
-      }
-      if (viewKey === "subTodo" || viewKey === "subClosed" || viewKey === "subOvertime") {
-        return withIndex(["编号", "事件标题", "责任部门", "紧急度", "截止时间", "状态", "操作"], row => [row[0], row[1], row[3], severityChip(row[5]), row[6], statusChip(row[7]), `<span class="dispatch-link" data-row="${row[0]}" data-action="详情查看">详情查看</span>`]);
-      }
-      if (viewKey === "done") {
-        return withIndex(["编号", "事件标题", "责任部门", "紧急度", "发起时间", "办理时间", "操作"], row => [row[0], row[1], row[3], severityChip(row[5]), row[6], row[7], `<div class="dispatch-actions"><span class="dispatch-link" data-row="${row[0]}" data-action="办理">办理</span><span class="dispatch-link" data-row="${row[0]}" data-action="办结">办结</span></div>`]);
-      }
-      if (viewKey === "closed") {
-        return withIndex(["编号", "事件标题", "责任部门", "紧急度", "办结时间", "操作"], row => [row[0], row[1], row[3], severityChip(row[5]), row[6], `<span class="dispatch-link" data-row="${row[0]}" data-action="详情">详情</span>`]);
-      }
-      if (viewKey === "evaluate") {
-        return withIndex(["编号", "事件标题", "责任部门", "紧急度", "办结时间", "评价状态", "操作"], row => [row[0], row[1], row[3], severityChip(row[5]), row[6], statusChip(row[7]), `<span class="dispatch-link" data-row="${row[0]}" data-action="${row[8]}">${row[8]}</span>`]);
-      }
-      return withIndex(["编号", "事件标题", "责任部门", "紧急度", "发起时间", "操作"], row => [row[0], row[1], row[3], severityChip(row[5]), row[6], `<span class="dispatch-link" data-row="${row[0]}" data-action="办理">办理</span>`]);
-    }
-
-    function openDispatchDetail(rowId) {
-      const rows = dispatchEventData[currentDispatchView] || [];
-      const row = rows.find(item => item[0] === rowId || item[1] === rowId) || rows[0];
-      if (!row) return;
-      dispatchTableWrap.style.display = "none";
-      dispatchFooter.style.display = "none";
-      dispatchToolbar.style.display = "none";
-      dispatchTitle.textContent = `事件详情 - ${row[0]}`;
-      dispatchCrumb.textContent = `${dispatchViewMeta[currentDispatchView].crumb.join(" / ")} / 事件详情`;
-      dispatchDetail.innerHTML = `
-        <div class="detail-section-title">事件信息</div>
-        <div class="detail-box">
-          <div class="info-grid">
-            <div>编号：${row[0]}</div>
-            <div>标题：${row[1]}</div>
-            <div>来源部门：${row[2] || "--"}</div>
-            <div>责任部门：${row[3] || "--"}</div>
-            <div>紧急度：${row[5] || "--"}</div>
-            <div>发起人：admin</div>
-            <div>发起时间：${row[6] || row[3] || "--"}</div>
-            <div class="full">事件描述：该内容直接沿用源文件模块风格展示，用于查看当前事件基础信息、处置记录及办理材料。</div>
-          </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-800 truncate">${s.name}</p>
+          <p class="text-xs text-gray-400">${s.table}</p>
         </div>
-        <div class="detail-section-title">事件流转记录</div>
-        <div class="detail-box">
-          <div class="flow-list">
-            <div class="flow-row"><span>2026-04-01 09:05　系统分派给 张三</span><span class="flow-right"><span class="attach-link">查看附件</span><span class="status-tag">待处理</span></span></div>
-            <div class="flow-row"><span>2026-04-01 10:20　张三 转交 李四</span><span class="flow-right"><span class="attach-link">查看附件</span><span class="status-tag">处理中</span></span></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function selectStandard(id) {
+  currentId = id;
+  currentTab = 'list';
+  renderSidebar();
+  renderWorkspace();
+}
+
+// ============================================================
+// 字段编辑弹窗
+// ============================================================
+function openFieldModal(id, e) {
+  if (e) e.stopPropagation();
+  editingFieldId = id;
+  const std = getStd(id);
+  document.getElementById('fieldModalTitle').textContent = `编辑字段 — ${std.name}`;
+  const body = document.getElementById('fieldModalBody');
+
+  const typeMap = { string:'text文本', number:'数字', date:'日期', enum:'枚举' };
+  const typeTagClass = { string:'tag-string', number:'tag-number', date:'tag-date', enum:'tag-enum' };
+
+  body.innerHTML = `
+    <div class="text-xs text-gray-500 mb-3">勾选需要启用的字段，已启用字段将出现在列表配置和详情配置中。</div>
+    <div class="flex flex-col gap-1">
+      ${std.fields.map(f => `
+        <label class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-gray-50 cursor-pointer">
+          <input type="checkbox" class="field-checkbox" id="fck_${f.key}" ${f.active ? 'checked' : ''} />
+          <div class="flex-1 flex items-center gap-2">
+            <span class="text-sm text-gray-800 font-medium">${f.label}</span>
+            <span class="text-xs text-gray-400">(${f.key})</span>
           </div>
+          <span class="tag-text ${typeTagClass[f.type] || 'tag-string'}">${typeMap[f.type] || f.type}</span>
+          ${f.join ? `<span class="tag-text tag-join">联表·${f.joinTable}</span>` : ''}
+        </label>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('fieldModal').classList.remove('hidden');
+}
+
+function selectAllFields(checked) {
+  document.querySelectorAll('#fieldModalBody input[type="checkbox"]')
+    .forEach(cb => cb.checked = checked);
+}
+
+function confirmFieldEdit() {
+  const std = getStd(editingFieldId);
+  std.fields.forEach(f => {
+    const cb = document.getElementById('fck_' + f.key);
+    if (cb) f.active = cb.checked;
+  });
+  // 重建该标准件的配置
+  delete configs[editingFieldId];
+  ensureConfig(editingFieldId);
+
+  // 如果当前正在查看该标准件，刷新
+  if (currentId === editingFieldId) renderWorkspace();
+  closeModal('fieldModal');
+  renderSidebar();
+  showToast('字段配置已更新');
+}
+
+// ============================================================
+// 新增表单弹窗
+// ============================================================
+function openNewModal() {
+  document.getElementById('newName').value = '';
+  document.getElementById('newTable').value = '';
+  document.getElementById('newModal').classList.remove('hidden');
+  setTimeout(() => document.getElementById('newName').focus(), 100);
+}
+
+function confirmNewStandard() {
+  const name = document.getElementById('newName').value.trim();
+  const table = document.getElementById('newTable').value.trim() || name.toLowerCase().replace(/\s+/g, '_');
+  if (!name) { alert('请输入标准件名称'); return; }
+  if (standards.find(s => s.name === name)) { alert('名称已存在，请换一个名称'); return; }
+  const id = 's' + uid();
+  const newStd = {
+    id, name, table,
+    fields: [
+      { key: 'id', label: 'ID', type: 'number', active: true, join: false },
+      { key: 'name', label: '名称', type: 'string', active: true, join: false },
+      { key: 'status', label: '状态', type: 'enum', active: true, join: false },
+      { key: 'created_at', label: '创建时间', type: 'date', active: true, join: false },
+      { key: 'remark', label: '备注', type: 'string', active: false, join: false },
+    ]
+  };
+  standards.push(newStd);
+  closeModal('newModal');
+  // 切换到新标准件，并弹出字段编辑
+  currentId = id;
+  renderSidebar();
+  openFieldModal(id);
+}
+
+// ============================================================
+// 渲染工作区
+// ============================================================
+function renderWorkspace() {
+  ensureConfig(currentId);
+  const std = getStd(currentId);
+  document.getElementById('workspaceTitle').textContent = std.name;
+  document.getElementById('workspaceTable').textContent = std.table;
+  document.getElementById('tab-list').className = currentTab === 'list' ? 'tab-active pb-2 text-sm' : 'tab-inactive pb-2 text-sm';
+  document.getElementById('tab-detail').className = currentTab === 'detail' ? 'tab-active pb-2 text-sm' : 'tab-inactive pb-2 text-sm';
+
+  const cfg = configs[currentId];
+  const content = document.getElementById('workspaceContent');
+
+  if (currentTab === 'list') {
+    content.innerHTML = renderListTab(std, cfg);
+    initDragSort();
+  } else {
+    content.innerHTML = renderDetailTab(std, cfg);
+  }
+  if (currentTab === 'list') {
+    content.innerHTML += renderActionButtons(cfg);
+  }
+}
+
+function switchTab(tab) {
+  currentTab = tab;
+  renderWorkspace();
+}
+
+// ============================================================
+// 列表配置 Tab
+// ============================================================
+function renderListTab(std, cfg) {
+  const rows = cfg.listFields.map((f, idx) => `
+    <tr id="row_${f.key}" draggable="true" ondragstart="dragStart(event,'${f.key}')"
+        ondragover="dragOver(event)" ondrop="dropRow(event,'${f.key}')" ondragleave="dragLeave(event)">
+      <td class="drag-handle text-gray-300 text-lg px-2">⠿</td>
+      <td class="font-medium text-gray-700">${f.label}</td>
+      <td><span class="text-xs text-gray-400">${f.key}</span></td>
+      <td><input type="text" value="${f.label}" style="width:90px"
+                 onchange="listFieldChange('${f.key}','customLabel',this.value)" /></td>
+      <td><input type="number" value="${f.width}" style="width:64px" min="60" max="400"
+                 onchange="listFieldChange('${f.key}','width',+this.value)" /></td>
+      ${f.join ? `<td><span class="tag-text tag-join">联表·${f.joinTable}</span></td>` : '<td></td>'}
+    </tr>
+  `).join('');
+
+  return `
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">📋 列展示字段</span>
+        <span class="text-xs text-gray-400">拖拽 ⠿ 可调整列顺序</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full" id="listFieldTable">
+          <thead><tr>
+            <th style="width:32px"></th>
+            <th>字段名</th>
+            <th>Key</th>
+            <th>列标题</th>
+            <th>宽度</th>
+            <th>联表</th>
+          </tr></thead>
+          <tbody id="listFieldBody">${rows}</tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3 border-t border-gray-100">
+        <button class="btn-add" onclick="openJoinModal()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+          修改关联表字段
+        </button>
+      </div>
+    </div>
+
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">🔍 查询条件</span>
+        <span class="text-xs text-gray-400">配置列表页顶部筛选项</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full" id="queryTable">
+          <thead><tr>
+            <th>绑定字段</th>
+            <th>条件类型</th>
+            <th>控件类型</th>
+            <th>默认值</th>
+            <th style="width:52px">必填</th>
+            <th style="width:52px">操作</th>
+          </tr></thead>
+          <tbody id="queryBody">${renderQueryRows()}</tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3 border-t border-gray-100">
+        <button class="btn-add" onclick="addQueryCondition()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+          添加条件
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+function renderQueryRows() {
+  const cfg = configs[currentId];
+  const std = getStd(currentId);
+  const fieldOpts = std.fields.filter(f=>f.active).map(f => `<option value="${f.key}">${f.label}</option>`).join('');
+  const condOpts = ['contains|包含','equals|等于','starts_with|开头是','gt|大于','lt|小于','between|区间'].map(v=>{const[k,t]=v.split('|');return `<option value="${k}">${t}</option>`;}).join('');
+  const widgetOpts = ['text|文本框','select|下拉框','date_range|日期范围','number|数字输入','multi_select|多选框'].map(v=>{const[k,t]=v.split('|');return `<option value="${k}">${t}</option>`;}).join('');
+
+  return cfg.queryConditions.map(c => `
+    <tr id="qrow_${c.id}">
+      <td><select style="width:110px" onchange="queryCondChange('${c.id}','field',this.value)">
+        ${std.fields.filter(f=>f.active).map(f=>`<option value="${f.key}" ${c.field===f.key?'selected':''}>${f.label}</option>`).join('')}
+      </select></td>
+      <td><select style="width:80px" onchange="queryCondChange('${c.id}','condType',this.value)">
+        ${['contains|包含','equals|等于','starts_with|开头','gt|大于','lt|小于','between|区间'].map(v=>{const[k,t]=v.split('|');return `<option value="${k}" ${c.condType===k?'selected':''}>${t}</option>`;}).join('')}
+      </select></td>
+      <td><select style="width:90px" onchange="queryCondChange('${c.id}','widgetType',this.value)">
+        ${['text|文本框','select|下拉','date_range|日期范围','number|数字','multi_select|多选'].map(v=>{const[k,t]=v.split('|');return `<option value="${k}" ${c.widgetType===k?'selected':''}>${t}</option>`;}).join('')}
+      </select></td>
+      <td><input type="text" value="${c.defaultVal||''}" style="width:90px" placeholder="（空）"
+                 onchange="queryCondChange('${c.id}','defaultVal',this.value)" /></td>
+      <td class="text-center"><input type="checkbox" class="field-checkbox" ${c.required?'checked':''}
+                 onchange="queryCondChange('${c.id}','required',this.checked)" /></td>
+      <td><button class="btn-danger" onclick="removeQueryCond('${c.id}')">删除</button></td>
+    </tr>
+  `).join('');
+}
+
+// ============================================================
+// 详情配置 Tab
+// ============================================================
+function renderDetailTab(std, cfg) {
+  const groups = cfg.detailGroups.map((g, gi) => `
+    <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+      <div class="bg-gray-50 px-4 py-2.5 flex items-center justify-between border-b border-gray-200">
+        <div class="flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="#6b7280">
+            <path d="M1 2a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V2zm5 0a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2a1 1 0 0 1-1-1V2z"/>
+          </svg>
+          <input type="text" value="${g.name}" style="width:120px;background:transparent;border:none;font-weight:600;font-size:14px;color:#1e293b;padding:0"
+                 onchange="renameGroup('${g.id}',this.value)" onfocus="this.style.border='1px solid #d1d5db';this.style.borderRadius='4px';this.style.padding='2px 6px'"
+                 onblur="this.style.border='none';this.style.padding='0'" />
         </div>
-        ${(["todo","done","superviseProcessing"].includes(currentDispatchView)) ? `
-        <div class="detail-section-title">办理操作</div>
-        <div class="detail-box">
-          <div class="form-grid">
-            <div>下一步操作：</div>
-            <div class="radio-row">
-              <span class="radio-item"><span class="radio-dot"></span>办理</span>
-              <span class="radio-item"><span class="radio-dot"></span>转办：</span>
-              <span class="fake-select">选择部门 <span>V</span></span>
-            </div>
-            <div class="radio-row">
-              <span class="radio-item"><span class="radio-dot"></span>退回修改</span>
-              <span class="radio-item"><span class="radio-dot"></span>挂起</span>
-            </div>
-            <div>办理详情：</div>
-            <div class="text-area-fake">请输入办理说明、排查过程和处理结论</div>
-            <div>办理文件上传：</div>
-            <div class="upload-row">
-              <span class="upload-chip">+ 上传图片</span>
-              <span class="upload-chip">+ 上传文件</span>
-            </div>
-            <div class="file-line">已上传：截图.png　分析报告.pdf <span class="delete-link">删除</span></div>
-            <div class="submit-row">
-              <button class="btn primary" data-detail-submit="提交" type="button">提交</button>
-              <button class="btn" data-detail-submit="暂存" type="button">暂存</button>
-              <button class="btn" id="dispatchBackBtn" type="button">返回列表</button>
-            </div>
+        <div class="flex items-center gap-3">
+          <button class="text-xs text-blue-500 hover:text-blue-700" onclick="openJoinModal('detail','${g.id}')">编辑</button>
+          <button class="text-xs text-red-400 hover:text-red-600" onclick="removeGroup('${g.id}')">删除分组</button>
+        </div>
+      </div>
+      <div class="p-4 grid grid-cols-3 gap-x-3 gap-y-2">
+        ${g.fields.map(f => `
+          <div class="flex items-center gap-1.5 px-1.5 py-1.5 rounded hover:bg-gray-50">
+            <label class="flex items-center gap-1.5 min-w-0 cursor-pointer">
+              <input type="checkbox" class="field-checkbox shrink-0" ${f.visible?'checked':''}
+                     onchange="detailFieldChange('${g.id}','${f.key}',this.checked)" />
+              <span class="text-sm text-gray-700 truncate w-20">${f.label}</span>
+              ${f.join ? '<span class="tag-text tag-join shrink-0">联表</span>' : ''}
+            </label>
+            <input type="text" value="${f.label}" class="w-24"
+                   onchange="detailFieldLabelChange('${g.id}','${f.key}',this.value)" />
           </div>
-        </div>` : `
-        <div class="detail-box">
-          <div class="submit-row">
-            <button class="btn" id="dispatchBackBtn" type="button">返回列表</button>
-          </div>
-        </div>`}
-      `;
-      document.getElementById("dispatchBackBtn").addEventListener("click", () => renderDispatchModule(currentDispatchView));
-      dispatchDetail.querySelectorAll("[data-detail-submit]").forEach(btn => {
-        btn.addEventListener("click", () => showDispatchActionFeedback(btn.dataset.detailSubmit, row[0]));
-      });
-    }
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
 
-    function showDispatchActionFeedback(action, rowId) {
-      const actionViews = {
-        "办结": {
-          title: `办结确认 - ${rowId}`,
-          body: `
-            <div class="record-title">办理记录（已办环节）</div>
-            <div class="modal-form-box" style="margin-bottom:16px;">
-              <div class="flow-list">
-                <div class="flow-row"><span>2026-04-01 09:05　系统分派给 张三</span><span class="flow-right"><span class="status-tag">待处理</span></span></div>
-                <div class="flow-row"><span>2026-04-01 14:30　李四 办理</span><span class="flow-right"><span class="status-tag">已办</span></span></div>
-                <div class="flow-row"><span>2026-04-01 15:00　李四 办结</span><span class="flow-right"><span class="status-tag">已办结</span></span></div>
-              </div>
-            </div>
-            <div class="record-title">办结确认</div>
-            <div class="modal-form-box">
-              <div class="modal-grid">
-                <div class="form-row top"><div class="form-label">办结说明：</div><textarea class="text-area-fake" placeholder="请输入办结说明"></textarea></div>
-                <div class="form-row top"><div class="form-label">附件上传：</div><div><div class="upload-row"><span class="upload-chip">+ 上传图片</span><span class="upload-chip">+ 上传文件</span></div><div class="file-line" style="margin-top:10px;">已上传：办结报告.pdf　截图.png <span class="delete-link">删除</span></div></div></div>
-                <div class="modal-actions"><button class="btn primary" type="button">确认办结</button><button class="btn" data-modal-close type="button">取消</button></div>
-              </div>
-            </div>`
-        },
-        "评价": {
-          title: `事件评价 - ${rowId}`,
-          body: `
-            <div class="record-title">评价维度与标准：</div>
-            <div class="modal-form-box" style="margin-bottom:16px;">
-              <div class="score-block">
-                <div class="score-item"><div>1. 处置及时性（权重30%）：</div><div class="score-options"><span class="radio-item"><span class="radio-dot"></span>非常及时</span><span class="radio-item"><span class="radio-dot"></span>基本及时</span><span class="radio-item"><span class="radio-dot"></span>不及时</span></div></div>
-                <div class="score-item"><div>2. 处置效果（权重40%）：</div><div class="score-options"><span class="radio-item"><span class="radio-dot"></span>完全解决</span><span class="radio-item"><span class="radio-dot"></span>部分解决</span><span class="radio-item"><span class="radio-dot"></span>未解决</span></div></div>
-                <div class="score-item"><div>3. 沟通协调（权重20%）：</div><div class="score-options"><span class="radio-item"><span class="radio-dot"></span>非常满意</span><span class="radio-item"><span class="radio-dot"></span>基本满意</span><span class="radio-item"><span class="radio-dot"></span>不满意</span></div></div>
-              </div>
-            </div>
-            <div class="record-title">总体评价意见：</div>
-            <div class="modal-form-box"><div class="textarea-fake">[_________________________________________________________]</div></div>
-            <div class="modal-actions"><button class="btn primary" type="button">提交评价</button><button class="btn" data-modal-close type="button">取消</button></div>`
-        },
-        "督办": {
-          title: "督办事件",
-          body: `
-            <div class="modal-form-box">
-              <div class="modal-grid">
-                <div class="record-title">事件信息：</div>
-                <div class="info-grid">
-                  <div>编号：${rowId}</div><div>标题：东湖防溺水隐患</div><div>责任部门：水利局</div><div>当前状态：处置中　　督办标签：紧急</div>
-                </div>
-                <div class="form-row top"><div class="form-label">督办内容：</div><div class="textarea-fake">[_________________________________________________________________]</div></div>
-                <div class="form-row"><div class="form-label">督办等级：</div><div class="radio-row"><span class="radio-item"><span class="radio-dot"></span>一般</span><span class="radio-item"><span class="radio-dot"></span>重要</span><span class="radio-item"><span class="radio-dot"></span>紧急</span></div></div>
-                <div class="form-row"><div class="form-label">要求完成时间：</div><div class="form-value-row"><div class="input-fake" style="max-width:220px;">2026-04-10</div><span class="field-tip">日历选择</span></div></div>
-                <div class="modal-actions"><button class="btn primary" type="button">发送督办</button><button class="btn" data-modal-close type="button">取消</button></div>
-              </div>
-            </div>`
-        },
-        "审核": {
-          title: `审核 - ${rowId}`,
-          body: `
-            <div class="modal-form-box">
-              <div class="modal-grid">
-                <div class="record-title">督办事件信息：</div>
-                <div class="info-grid">
-                  <div>编号：${rowId}</div><div>标题：东湖防溺水隐患</div><div>责任部门：水利局</div><div class="full">督办要求：2026-04-03 18:00前完成整改并提交报告</div>
-                </div>
-                <div class="record-title">处置结果及佐证材料：</div>
-                <div class="summary-box"><div>✓ 处置报告.pdf</div><div>✓ 现场照片_1.jpg　现场照片_2.jpg</div><div>✓ 整改前后对比表.xlsx</div></div>
-                <div class="form-row top"><div class="form-label">审核意见：</div><div class="textarea-fake">[_________________________________________________________]</div></div>
-                <div class="form-row"><div class="form-label">审核结论：</div><div class="radio-row"><span class="radio-item"><span class="radio-dot"></span>通过办结</span><span class="radio-item"><span class="radio-dot"></span>退回整改</span></div></div>
-                <div class="modal-actions"><button class="btn primary" type="button">提交审核</button><button class="btn" data-modal-close type="button">取消</button></div>
-              </div>
-            </div>`
-        },
-        "编辑": {
-          title: "新增/编辑模型",
-          body: `
-            <div class="modal-form-box">
-              <div class="modal-grid">
-                <div class="form-row"><div class="form-label">模型名称：</div><div class="input-fake">_________________________</div></div>
-                <div class="form-row"><div class="form-label">模型类型：</div><div class="form-value-row"><div class="select-fake">下拉选择 <span>V</span></div><span class="form-label" style="margin-left:8px;">版本号：</span><div class="input-fake" style="max-width:120px;">_____</div></div></div>
-                <div class="form-row"><div class="form-label">状态：</div><div class="radio-row"><span class="radio-item"><span class="radio-dot"></span>启用</span><span class="radio-item"><span class="radio-dot"></span>停用</span><span class="radio-item"><span class="radio-dot"></span>测试</span></div></div>
-                <div class="form-row top"><div class="form-label">描述：</div><div class="textarea-fake">[_________________________________________________________]</div></div>
-                <div class="modal-actions"><button class="btn primary" type="button">保存</button><button class="btn" data-modal-close type="button">取消</button></div>
-              </div>
-            </div>`
-        },
-        "删除": {
-          title: "删除确认",
-          body: `<div class="modal-form-box"><div class="summary-box">确认删除当前模型或规则：${rowId} ？</div><div class="modal-actions"><button class="btn primary" type="button">确认删除</button><button class="btn" data-modal-close type="button">取消</button></div></div>`
-        },
-        "批量转办": { title: "批量转办", body: `<div class="modal-form-box"><div class="summary-box">已选择当前页事件，准备执行批量转办。</div><div class="modal-actions"><button class="btn primary" type="button">确认转办</button><button class="btn" data-modal-close type="button">取消</button></div></div>` },
-        "批量归档": { title: "批量归档", body: `<div class="modal-form-box"><div class="summary-box">已选择当前页事件，准备执行批量归档。</div><div class="modal-actions"><button class="btn primary" type="button">确认归档</button><button class="btn" data-modal-close type="button">取消</button></div></div>` },
-        "批量办结": { title: "批量办结", body: `<div class="modal-form-box"><div class="summary-box">已选择当前页事件，准备执行批量办结。</div><div class="modal-actions"><button class="btn primary" type="button">确认办结</button><button class="btn" data-modal-close type="button">取消</button></div></div>` },
-        "批量评价": { title: "批量评价", body: `<div class="modal-form-box"><div class="summary-box">已选择当前页事件，准备执行批量评价。</div><div class="modal-actions"><button class="btn primary" type="button">提交评价</button><button class="btn" data-modal-close type="button">取消</button></div></div>` },
-        "批量详情": { title: "批量详情", body: `<div class="modal-form-box"><div class="summary-box">该操作用于批量查看办结详情原型。</div><div class="modal-actions"><button class="btn" data-modal-close type="button">关闭</button></div></div>` }
-      };
-      const modalCfg = actionViews[action];
-      if (modalCfg) {
-        openDispatchModal(modalCfg.title, modalCfg.body);
-        dispatchModalBody.querySelectorAll("[data-modal-close]").forEach(btn => btn.addEventListener("click", closeDispatchModal));
-        return;
-      }
-      dispatchDetail.innerHTML = `
-        <div class="dispatch-info-block">
-          <h4>操作反馈</h4>
-          <p>已触发“${action}”交互，当前对象编号为 ${rowId}。这部分按原型方式保留前端动态反馈，不接后台。</p>
-        </div>
-      `;
-    }
+  return `
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">📄 详情展示字段</span>
+        <button class="btn-add text-sm" onclick="addDetailGroup()">
+          <svg width="13" height="13" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+          添加分组
+        </button>
+      </div>
+      <div class="p-4" id="detailGroupsContainer">
+        ${groups || '<p class="text-sm text-gray-400 text-center py-6">暂无分组，点击「添加分组」创建</p>'}
+      </div>
+    </div>
+  `;
+}
 
-    function bindDispatchActions() {
-      dispatchList.querySelectorAll("[data-row]").forEach(node => {
-        node.addEventListener("click", () => {
-          const action = node.dataset.action || "详情";
-          if (["详情", "详情查看", "办理"].includes(action)) {
-            openDispatchDetail(node.dataset.row);
-            return;
-          }
-          showDispatchActionFeedback(action, node.dataset.row);
-        });
-      });
-    }
+// ============================================================
+// 操作按钮区块
+// ============================================================
+function renderActionButtons(cfg) {
+  const rows = cfg.actionButtons.map(b => `
+    <tr>
+      <td><input type="text" value="${b.name}" style="width:100px"
+                 onchange="actionBtnChange('${b.id}','name',this.value)" /></td>
+      <td><select style="width:80px" onchange="actionBtnChange('${b.id}','btnType',this.value)">
+        ${[['primary','主要'],['secondary','次要'],['danger','危险']].map(([v,t])=>`<option value="${v}" ${b.btnType===v?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><select style="width:110px" onchange="actionBtnChange('${b.id}','position',this.value)">
+        ${[['list-row','列表行内'],['detail-top','详情页顶部'],['detail-bottom','详情页底部']].map(([v,t])=>`<option value="${v}" ${b.position===v?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><select style="width:110px" onchange="actionBtnChange('${b.id}','behavior',this.value)">
+        ${[['open-detail','打开详情弹窗'],['goto-edit','跳转编辑页'],['call-api','调用接口'],['custom-url','自定义URL']].map(([v,t])=>`<option value="${v}" ${b.behavior===v?'selected':''}>${t}</option>`).join('')}
+      </select></td>
+      <td><button class="btn-danger" onclick="removeActionBtn('${b.id}')">删除</button></td>
+    </tr>
+  `).join('');
 
-    function renderDispatchModule(viewKey) {
-      currentDispatchView = viewKey;
-      currentTopView = findParentGroupByView(viewKey);
-      const meta = dispatchViewMeta[viewKey];
-      dispatchTitle.textContent = meta.title;
-      dispatchCrumb.textContent = meta.crumb.join(" / ");
-      renderDispatchTabs(currentTopView);
-      syncSidebarState(currentTopView, viewKey, false);
-      renderDispatchToolbar(meta);
-      dispatchDetail.innerHTML = "";
+  return `
+    <div class="section-card">
+      <div class="section-header">
+        <span class="section-title">🖱 操作按钮</span>
+        <span class="text-xs text-gray-400">影响列表行内及详情页按钮</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead><tr>
+            <th>按钮名称</th><th>按钮类型</th><th>显示位置</th><th>行为</th>
+            <th style="width:52px">操作</th>
+          </tr></thead>
+          <tbody id="actionBody">${rows}</tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3 border-t border-gray-100">
+        <button class="btn-add" onclick="addActionButton()">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a.5.5 0 0 1 .5.5v6h6a.5.5 0 0 1 0 1h-6v6a.5.5 0 0 1-1 0v-6h-6a.5.5 0 0 1 0-1h6v-6A.5.5 0 0 1 8 1z"/></svg>
+          添加按钮
+        </button>
+      </div>
+    </div>
+  `;
+}
 
-      if (renderDispatchSpecial(viewKey)) {
-        return;
-      }
+// ============================================================
+// 数据变更操作
+// ============================================================
+function listFieldChange(key, prop, val) {
+  const f = configs[currentId].listFields.find(f => f.key === key);
+  if (f) f[prop] = val;
+}
 
-      const cfg = buildDispatchConfig(viewKey);
-      dispatchTableWrap.style.display = "block";
-      dispatchFooter.style.display = "flex";
-      dispatchHead.innerHTML = `<tr>${cfg.head.map(title => `<th>${title}</th>`).join("")}</tr>`;
-      dispatchList.innerHTML = cfg.rows.map(row => `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`).join("");
-      dispatchRecordText.textContent = `共 ${cfg.rows.length} 条记录`;
-      dispatchDetail.innerHTML = `
-        <div class="dispatch-info-block">
-          <h4>模块说明</h4>
-          <p>当前内容已按源文件“${meta.title}”补齐筛选文案、操作按钮和详情/审核/督办等表单原型。</p>
-        </div>
-      `;
-      bindDispatchActions();
-    }
+function queryCondChange(id, prop, val) {
+  const c = configs[currentId].queryConditions.find(c => c.id === id);
+  if (c) c[prop] = val;
+}
 
-    function switchView(key) {
-      const isOverview = key === "overview";
-      const isFireDetail = key === "fire-detail";
-      overviewView.classList.toggle("active", isOverview);
-      dispatchView.classList.toggle("active", !isOverview && !isFireDetail);
-      fireDetailView.classList.toggle("active", isFireDetail);
-      if (isOverview || isFireDetail) {
-        syncSidebarState("", "", true);
-        if (isFireDetail) {
-          overviewMenuItem?.classList.remove("active");
-        }
-        return;
-      }
-      openGroup(key, true);
-    }
+function removeQueryCond(id) {
+  configs[currentId].queryConditions = configs[currentId].queryConditions.filter(c => c.id !== id);
+  document.getElementById('qrow_' + id)?.remove();
+}
 
-    function toggleSort(state, key) {
-      if (state.key === key) {
-        state.dir = state.dir === "asc" ? "desc" : "asc";
-      } else {
-        state.key = key;
-        state.dir = "desc";
-      }
-    }
+function addQueryCondition() {
+  const std = getStd(currentId);
+  const firstField = std.fields.find(f => f.active);
+  const newCond = {
+    id: uid(), field: firstField?.key || '', condType: 'contains',
+    widgetType: 'text', defaultVal: '', required: false
+  };
+  configs[currentId].queryConditions.push(newCond);
+  // 重新渲染查询条件
+  const tbody = document.getElementById('queryBody');
+  if (tbody) tbody.innerHTML = renderQueryRows();
+}
 
-    deviceSortTotal.addEventListener("click", () => { toggleSort(deviceSort, "total"); renderDeviceTable(); });
-    deviceSortRate.addEventListener("click", () => { toggleSort(deviceSort, "rate"); renderDeviceTable(); });
-    sceneChip.addEventListener("change", () => {
-      currentScene = sceneChip.value;
-      renderOverview();
-    });
-    alarmQueryBtn.addEventListener("click", applyAlarmFilters);
-    alarmResetBtn.addEventListener("click", resetAlarmFilters);
-    bindAlarmFilterEvents();
+function detailFieldChange(groupId, fieldKey, visible) {
+  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
+  if (g) {
+    const f = g.fields.find(f => f.key === fieldKey);
+    if (f) f.visible = visible;
+  }
+}
 
-    [hotRegionFilter, hotDeptFilter, hotTimeFilter].forEach(el => el.addEventListener("change", renderHotEvents));
-    hotSearchBtn.addEventListener("click", renderHotEvents);
-    hotSearchInput.addEventListener("keydown", (e) => { if (e.key === "Enter") renderHotEvents(); });
+function detailFieldLabelChange(groupId, fieldKey, label) {
+  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
+  if (g) {
+    const f = g.fields.find(f => f.key === fieldKey);
+    if (f) f.label = label.trim() || f.label;
+  }
+}
 
-    hotlineDeptTab.addEventListener("click", () => { hotlineMode = "department"; renderHotline(); });
-    hotlineTypeTab.addEventListener("click", () => { hotlineMode = "type"; renderHotline(); });
-    hotlineApply.addEventListener("click", renderHotline);
-    trendBadges.forEach(badge => badge.addEventListener("click", () => {
-      trendRange = badge.dataset.range;
-      renderTrend();
+function renameGroup(groupId, name) {
+  const g = configs[currentId].detailGroups.find(g => g.id === groupId);
+  if (g) g.name = name;
+}
+
+function removeGroup(groupId) {
+  configs[currentId].detailGroups = configs[currentId].detailGroups.filter(g => g.id !== groupId);
+  renderWorkspace();
+}
+
+function addDetailGroup() {
+  const std = getStd(currentId);
+  const activeFields = std.fields.filter(f => f.active);
+  configs[currentId].detailGroups.push({
+    id: uid(), name: '新分组',
+    fields: activeFields.map(f => ({ key: f.key, label: f.label, visible: false, join: f.join || false }))
+  });
+  renderWorkspace();
+}
+
+function actionBtnChange(id, prop, val) {
+  const b = configs[currentId].actionButtons.find(b => b.id === id);
+  if (b) b[prop] = val;
+}
+
+function removeActionBtn(id) {
+  configs[currentId].actionButtons = configs[currentId].actionButtons.filter(b => b.id !== id);
+  renderWorkspace();
+}
+
+function addActionButton() {
+  configs[currentId].actionButtons.push({
+    id: uid(), name: '新按钮', btnType: 'secondary',
+    position: 'list-row', behavior: 'open-detail'
+  });
+  renderWorkspace();
+}
+
+// ============================================================
+// 联表字段弹窗
+// ============================================================
+let joinModalContext = { type: 'list', groupId: null };
+
+function openJoinModal(type = 'list', groupId = null) {
+  joinModalContext = { type, groupId };
+  const select = document.getElementById('joinTable');
+  select.innerHTML = standards.map(s => `<option value="${s.id}">${s.table}（${s.name}）</option>`).join('');
+  select.value = currentId;
+  renderJoinFieldOptions();
+  document.getElementById('joinModal').classList.remove('hidden');
+}
+
+function joinFieldKey(table, fieldKey) {
+  return `join_${table}_${fieldKey}`;
+}
+
+function renderJoinFieldOptions() {
+  const selectedId = document.getElementById('joinTable').value;
+  const selectedStd = getStd(selectedId);
+  const cfg = configs[currentId];
+  const targetGroup = joinModalContext.type === 'detail'
+    ? cfg.detailGroups.find(g => g.id === joinModalContext.groupId)
+    : null;
+  const checkedKeys = new Set(
+    targetGroup ? targetGroup.fields.filter(f => f.visible).map(f => f.key) : cfg.listFields.map(f => f.key)
+  );
+  const rows = selectedStd.fields.map(f => {
+    const key = selectedId === currentId ? f.key : joinFieldKey(selectedStd.table, f.key);
+    const checked = checkedKeys.has(key) ? 'checked' : '';
+    return `
+      <label class="flex items-center gap-3 px-4 py-2.5 border-b border-gray-100 last:border-b-0 hover:bg-gray-50 cursor-pointer">
+        <input type="checkbox" class="field-checkbox join-field-checkbox" value="${f.key}" ${checked} />
+        <span class="font-medium text-gray-700 min-w-[120px]">${f.label}</span>
+        <span class="text-xs text-gray-400">${f.key}</span>
+        <span class="ml-auto tag-text tag-${f.type || 'string'}">${f.type || 'string'}</span>
+      </label>
+    `;
+  }).join('');
+  document.getElementById('joinFieldOptions').innerHTML = rows || '<p class="text-sm text-gray-400 text-center py-6">暂无字段</p>';
+}
+
+function normalizeSelectedField(selectedStd, field, selectedId) {
+  const isCurrentTable = selectedId === currentId;
+  const key = isCurrentTable ? field.key : joinFieldKey(selectedStd.table, field.key);
+  return {
+    key,
+    label: isCurrentTable ? field.label : `${selectedStd.name}-${field.label}`,
+    type: field.type || 'string',
+    join: !isCurrentTable,
+    joinTable: isCurrentTable ? '' : selectedStd.table
+  };
+}
+
+function confirmJoinField() {
+  const selectedId = document.getElementById('joinTable').value;
+  const selectedStd = getStd(selectedId);
+  const std = getStd(currentId);
+  const checkedFields = Array.from(document.querySelectorAll('.join-field-checkbox:checked')).map(el => el.value);
+  if (!checkedFields.length) { alert('请至少勾选一个字段'); return; }
+
+  if (joinModalContext.type === 'detail') {
+    const group = configs[currentId].detailGroups.find(g => g.id === joinModalContext.groupId);
+    if (!group) return;
+    const selectedKeys = new Set(selectedStd.fields.map(field => {
+      const normalized = normalizeSelectedField(selectedStd, field, selectedId);
+      return normalized.key;
     }));
-    if (overviewMenuItem) {
-      overviewMenuItem.addEventListener("click", () => switchView("overview"));
-    }
-    backToOverview.addEventListener("click", () => switchView("overview"));
-    messageRemind.addEventListener("click", (event) => {
-      event.stopPropagation();
-      messagePopover.classList.toggle("show");
-    });
-    messagePopover.addEventListener("click", (event) => event.stopPropagation());
-    document.addEventListener("click", () => messagePopover.classList.remove("show"));
-    messageTodoLink.addEventListener("click", () => {
-      messagePopover.classList.remove("show");
-      currentTopView = "mine";
-      overviewView.classList.remove("active");
-      fireDetailView.classList.remove("active");
-      dispatchView.classList.add("active");
-      renderDispatchModule("todo");
-    });
-    messageAuditLink.addEventListener("click", () => {
-      messagePopover.classList.remove("show");
-      currentTopView = "supervise";
-      overviewView.classList.remove("active");
-      fireDetailView.classList.remove("active");
-      dispatchView.classList.add("active");
-      renderDispatchModule("superviseAudit");
-    });
-    document.querySelectorAll("[data-supervise-message]").forEach(item => {
-      item.addEventListener("click", () => {
-        messagePopover.classList.remove("show");
-        currentTopView = "supervise";
-        overviewView.classList.remove("active");
-        fireDetailView.classList.remove("active");
-        dispatchView.classList.add("active");
-        renderDispatchModule("superviseProcessing");
-        openDispatchDetail(item.dataset.superviseMessage);
+    group.fields = group.fields.filter(f => !selectedKeys.has(f.key));
+
+    checkedFields.forEach(fieldKey => {
+      const field = selectedStd.fields.find(f => f.key === fieldKey);
+      if (!field) return;
+      const normalized = normalizeSelectedField(selectedStd, field, selectedId);
+      if (!std.fields.some(f => f.key === normalized.key)) {
+        std.fields.push({ ...normalized, active: true });
+      }
+      group.fields.push({
+        key: normalized.key,
+        label: normalized.label,
+        visible: true,
+        join: normalized.join,
+        joinTable: normalized.joinTable
       });
-    });
-    dispatchModalClose.addEventListener("click", closeDispatchModal);
-    dispatchModal.addEventListener("click", (event) => {
-      if (event.target === dispatchModal) closeDispatchModal();
-    });
-    groupButtons.forEach(button => {
-      button.addEventListener("click", () => {
-        const groupKey = button.dataset.toggleGroup;
-        const parent = button.closest(".menu-group");
-        const willExpand = !parent.classList.contains("expanded");
-        menuGroups.forEach(group => group.classList.remove("expanded"));
-        if (willExpand) {
-          parent.classList.add("expanded");
-          openGroup(groupKey, true);
-        } else {
-          parent.classList.remove("expanded");
-        }
-      });
-    });
-    subMenuItems.forEach(item => {
-      item.addEventListener("click", () => {
-        currentTopView = item.dataset.parentGroup;
-        overviewView.classList.remove("active");
-        dispatchView.classList.add("active");
-        renderDispatchModule(item.dataset.subView);
-      });
-    });
-    directDispatchItems.forEach(item => {
-      item.addEventListener("click", () => {
-        const viewKey = item.dataset.directDispatch;
-        currentTopView = item.dataset.groupLabel || findParentGroupByView(viewKey);
-        overviewView.classList.remove("active");
-        dispatchView.classList.add("active");
-        renderDispatchModule(viewKey);
-      });
-    });
-    dispatchCreateBtn.addEventListener("click", () => {
-      const sourceDeptRow = currentDispatchView === "superviseCenter"
-        ? ""
-        : `<div class="form-row"><div class="form-label">来源部门：</div><div class="form-value-row"><div class="select-fake">技术中心 <span>V</span></div></div></div>`;
-      openDispatchModal("新建事件", `
-        <div class="modal-form-box">
-          <div class="modal-grid">
-            <div class="form-row"><div class="form-label">事件标题：</div><div class="input-fake">___________________________________________________</div></div>
-            ${sourceDeptRow}
-            <div class="form-row"><div class="form-label">责任部门：</div><div class="form-value-row"><div class="input-fake" style="max-width:360px;">___________________________</div><span class="field-tip">可输入或选择</span></div></div>
-            <div class="form-row"><div class="form-label">紧急度：</div><div class="radio-row"><span class="radio-item"><span class="radio-dot"></span>低</span><span class="radio-item"><span class="radio-dot"></span>中</span><span class="radio-item"><span class="radio-dot"></span>高</span></div></div>
-            <div class="form-row"><div class="form-label">完成时间：</div><div class="input-fake" style="max-width:260px;">2026-04-02 18:00</div></div>
-            <div class="form-row top"><div class="form-label">事件描述：</div><div class="textarea-fake">[_________________________________________________________________]<br>[_________________________________________________________________]</div></div>
-            <div class="form-row top"><div class="form-label">附件上传：</div><div><div class="upload-row"><span class="upload-chip">+ 上传图片</span><span class="upload-chip">+ 上传文件</span></div><div class="file-line" style="margin-top:10px;">已上传：示例图片.png　需求文档.pdf <span class="delete-link">删除</span></div></div></div>
-            <div class="modal-actions"><button class="btn primary" type="button">保存</button><button class="btn" data-modal-close type="button">取消</button></div>
-          </div>
-        </div>
-      `);
-      dispatchModalBody.querySelectorAll("[data-modal-close]").forEach(btn => btn.addEventListener("click", closeDispatchModal));
-    });
-    dispatchBatchActions.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-batch-action]");
-      if (!button) return;
-      showDispatchActionFeedback(button.dataset.batchAction, currentDispatchView);
     });
 
-    renderOverview();
-    renderTrend();
-    renderAlarmTable();
-    renderDeviceTable();
-    renderHotEvents();
-    renderHotline();
-    switchView("overview");
-  </script>
+    closeModal('joinModal');
+    renderWorkspace();
+    showToast('分组展示字段已更新');
+    return;
+  }
+
+  let addedCount = 0;
+  checkedFields.forEach(fieldKey => {
+    const field = selectedStd.fields.find(f => f.key === fieldKey);
+    if (!field) return;
+    const normalized = normalizeSelectedField(selectedStd, field, selectedId);
+    const key = normalized.key;
+    if (configs[currentId].listFields.some(f => f.key === key)) return;
+
+    if (!std.fields.some(f => f.key === key)) {
+      std.fields.push({
+        key, label: normalized.label, type: normalized.type, active: true,
+        join: normalized.join, joinTable: normalized.joinTable
+      });
+    }
+    configs[currentId].listFields.push({
+      key, label: normalized.label, visible: true, width: 120, align: 'left', format: '',
+      order: configs[currentId].listFields.length, join: normalized.join,
+      joinTable: normalized.joinTable
+    });
+    addedCount++;
+  });
+
+  closeModal('joinModal');
+  renderWorkspace();
+  showToast(addedCount ? `已添加 ${addedCount} 个字段` : '所选字段已在列表中');
+}
+
+// ============================================================
+// 拖拽排序
+// ============================================================
+let dragKey = null;
+
+function initDragSort() {
+  // 已通过 HTML attribute 绑定
+}
+
+function dragStart(e, key) {
+  dragKey = key;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function dragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+
+function dragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+
+function dropRow(e, targetKey) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (dragKey === targetKey) return;
+  const fields = configs[currentId].listFields;
+  const fromIdx = fields.findIndex(f => f.key === dragKey);
+  const toIdx = fields.findIndex(f => f.key === targetKey);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [item] = fields.splice(fromIdx, 1);
+  fields.splice(toIdx, 0, item);
+  renderWorkspace();
+  dragKey = null;
+}
+
+// ============================================================
+// 保存配置
+// ============================================================
+function saveConfig() {
+  localStorage.setItem('sc_standards', JSON.stringify(standards));
+  localStorage.setItem('sc_configs', JSON.stringify(configs));
+  document.getElementById('saveStatus').textContent = '已保存 ' + new Date().toLocaleTimeString();
+  showToast('配置保存成功 ✓');
+}
+
+// ============================================================
+// 工具函数
+// ============================================================
+function closeModal(id) {
+  document.getElementById(id).classList.add('hidden');
+}
+
+function closeModalOnOverlay(e, id) {
+  if (e.target.id === id) closeModal(id);
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  t.style.opacity = '1';
+  setTimeout(() => {
+    t.style.opacity = '0';
+    setTimeout(() => t.classList.add('hidden'), 300);
+  }, 2000);
+}
+
+// ESC 关闭弹窗
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    ['fieldModal','newModal','joinModal'].forEach(id => {
+      if (!document.getElementById(id).classList.contains('hidden')) closeModal(id);
+    });
+  }
+});
+
+// ============================================================
+// 初始化
+// ============================================================
+(function init() {
+  standards.forEach(s => ensureConfig(s.id));
+  renderSidebar();
+  renderWorkspace();
+})();
+</script>
 </body>
 </html>
