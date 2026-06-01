@@ -89,6 +89,27 @@
   }
   .switch input:checked + .switch-slider { background: #3b82f6; }
   .switch input:checked + .switch-slider::before { transform: translateX(16px); }
+  .preview-query-box {
+    background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 16px; margin-bottom: 16px;
+  }
+  .preview-table-wrap {
+    background: white; border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;
+  }
+  .preview-table-wrap th { background: #f1f5f9; }
+  .detail-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+  }
+  .detail-field {
+    padding: 10px 0; border-bottom: 1px dashed #f1f5f9;
+  }
+  .detail-field-label {
+    font-size: 12px; color: #8b95a5; margin-bottom: 4px; line-height: 1.4;
+  }
+  .detail-field-value {
+    font-size: 13px; color: #1e293b; word-break: break-all; line-height: 1.5;
+  }
+  .detail-field-full { grid-column: span 3; }
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #f1f5f9; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
@@ -145,8 +166,9 @@
       <!-- 动态渲染 -->
     </div>
 
-    <!-- 底部保存按钮 -->
-    <div class="bg-white border-t border-gray-200 px-6 py-3 flex justify-end shrink-0">
+    <!-- 底部按钮栏 -->
+    <div class="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-end gap-2 shrink-0">
+      <button class="btn-secondary" id="previewToggleBtn" onclick="togglePreview()">👁 预览</button>
       <button class="btn-primary" onclick="saveConfig()">💾 保存配置</button>
     </div>
   </main>
@@ -186,8 +208,11 @@
         <input type="text" id="newName" class="w-full" placeholder="如：合同管理" />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">数据源表名</label>
-        <input type="text" id="newTable" class="w-full" placeholder="如：contract（选填）" />
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-gray-700">数据源表</label>
+          <button type="button" class="btn-add py-0" onclick="addNewTableSelect()">+ 新增</button>
+        </div>
+        <div id="newTableList" class="flex flex-col gap-2"></div>
       </div>
     </div>
     <div class="px-6 pb-5 flex justify-end gap-2">
@@ -215,6 +240,20 @@
     <div class="px-6 pb-5 flex justify-end gap-2">
       <button class="btn-secondary" onclick="closeModal('joinModal')">取消</button>
       <button class="btn-primary" onclick="confirmJoinField()">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 详情预览弹窗 ==================== -->
+<div id="detailModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event,'detailModal')">
+  <div class="bg-white rounded-xl w-[900px] max-h-[85vh] flex flex-col shadow-2xl">
+    <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between shrink-0">
+      <h3 class="font-semibold text-gray-800 text-base">详情</h3>
+      <button onclick="closeModal('detailModal')" class="text-gray-400 hover:text-gray-600 text-xl leading-none">✕</button>
+    </div>
+    <div class="flex-1 overflow-y-auto px-6 py-4" id="detailModalBody"></div>
+    <div class="px-6 py-3 border-t border-gray-200 flex justify-end shrink-0">
+      <button class="btn-secondary" onclick="closeModal('detailModal')">关闭</button>
     </div>
   </div>
 </div>
@@ -308,6 +347,12 @@ let configs = JSON.parse(localStorage.getItem('sc_configs') || '{}');
 let currentId = standards[0].id;
 let currentTab = 'list';
 let editingFieldId = null; // 正在编辑字段的标准件id
+let isPreviewMode = false; // 是否处于预览模式
+let newTableRows = [];
+
+function getDataSourceTableOptions() {
+  return [...new Set(standards.map(s => s.table).filter(Boolean))];
+}
 
 // 初始化每个标准件的配置
 function ensureConfig(id) {
@@ -361,6 +406,7 @@ function renderSidebar() {
 function selectStandard(id) {
   currentId = id;
   currentTab = 'list';
+  isPreviewMode = false;
   renderSidebar();
   renderWorkspace();
 }
@@ -424,19 +470,53 @@ function confirmFieldEdit() {
 // ============================================================
 function openNewModal() {
   document.getElementById('newName').value = '';
-  document.getElementById('newTable').value = '';
+  newTableRows = [{ id: uid(), value: '' }];
+  renderNewTableRows();
   document.getElementById('newModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('newName').focus(), 100);
 }
 
+function renderNewTableRows() {
+  const options = getDataSourceTableOptions();
+  const wrap = document.getElementById('newTableList');
+  wrap.innerHTML = newTableRows.map((row, index) => `
+    <div class="flex items-center gap-2">
+      <select id="newTable_${row.id}" class="flex-1" onchange="updateNewTableRow('${row.id}', this.value)">
+        <option value="">请选择数据源表</option>
+        ${options.map(table => `
+          <option value="${table}" ${row.value === table ? 'selected' : ''}>${table}</option>
+        `).join('')}
+      </select>
+      ${index > 0 ? `<button type="button" class="btn-danger" onclick="removeNewTableRow('${row.id}')">删除</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function addNewTableSelect() {
+  newTableRows.push({ id: uid(), value: '' });
+  renderNewTableRows();
+}
+
+function updateNewTableRow(id, value) {
+  const row = newTableRows.find(item => item.id === id);
+  if (row) row.value = value;
+}
+
+function removeNewTableRow(id) {
+  newTableRows = newTableRows.filter(row => row.id !== id);
+  if (!newTableRows.length) addNewTableSelect();
+  renderNewTableRows();
+}
+
 function confirmNewStandard() {
   const name = document.getElementById('newName').value.trim();
-  const table = document.getElementById('newTable').value.trim() || name.toLowerCase().replace(/\s+/g, '_');
+  const tables = newTableRows.map(row => row.value.trim()).filter(Boolean);
+  const table = tables[0] || name.toLowerCase().replace(/\s+/g, '_');
   if (!name) { alert('请输入列表表单名称'); return; }
   if (standards.find(s => s.name === name)) { alert('名称已存在，请换一个名称'); return; }
   const id = 's' + uid();
   const newStd = {
-    id, name, table,
+    id, name, table, tables: tables.length ? tables : [table],
     fields: [
       { key: 'id', label: 'ID', type: 'number', active: true, join: false },
       { key: 'name', label: '名称', type: 'string', active: true, join: false },
@@ -463,8 +543,15 @@ function renderWorkspace() {
   document.getElementById('workspaceTable').textContent = std.table;
   document.getElementById('tab-list').className = 'tab-active pb-2 text-sm';
 
+  updatePreviewBtn();
+
   const cfg = configs[currentId];
   const content = document.getElementById('workspaceContent');
+
+  if (isPreviewMode) {
+    content.innerHTML = renderPreview(std, cfg);
+    return;
+  }
 
   content.innerHTML = renderListTab(std, cfg);
   initDragSort();
@@ -799,6 +886,223 @@ function dropRow(e, targetKey) {
 }
 
 // ============================================================
+// 预览模式
+// ============================================================
+function updatePreviewBtn() {
+  const btn = document.getElementById('previewToggleBtn');
+  if (!btn) return;
+  if (isPreviewMode) {
+    btn.textContent = '✏ 返回编辑';
+    btn.className = 'btn-primary';
+  } else {
+    btn.textContent = '👁 预览';
+    btn.className = 'btn-secondary';
+  }
+}
+
+function togglePreview() {
+  isPreviewMode = !isPreviewMode;
+  renderWorkspace();
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderPreview(std, cfg) {
+  const visibleFields = cfg.listFields.filter(f => f.listVisible);
+  const allFields = cfg.listFields;
+  if (!visibleFields.length) {
+    return `<div class="text-center text-gray-400 py-20">
+      <p class="text-lg mb-2">暂无列表展示字段</p>
+      <p class="text-sm">请在"列展示字段"中开启需要展示的字段</p>
+    </div>`;
+  }
+  const mockData = generateMockData(std, cfg, 8);
+
+  // 查询区
+  const queryHtml = renderPreviewQueryForm(cfg, std);
+
+  // 表头
+  const ths = visibleFields.map(f =>
+    `<th style="min-width:${f.width}px">${escHtml(f.customLabel || f.label)}</th>`
+  ).join('');
+
+  // 表体
+  const trs = mockData.map((row, idx) => {
+    const tds = visibleFields.map(f =>
+      `<td>${escHtml(row[f.key])}</td>`
+    ).join('');
+    return `<tr>${tds}<td class="text-center whitespace-nowrap"><button class="text-blue-500 hover:text-blue-700 text-sm font-medium" onclick="openDetailModal(${idx})">详情</button></td></tr>`;
+  }).join('');
+
+  return `
+    ${queryHtml}
+    <div class="preview-table-wrap">
+      <div class="overflow-x-auto">
+        <table class="w-full">
+          <thead><tr>${ths}<th style="width:64px" class="text-center">操作</th></tr></thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>
+      <div class="px-4 py-3 border-t border-gray-100 flex items-center justify-between text-sm text-gray-500">
+        <span>共 ${mockData.length} 条记录</span>
+        <span class="text-xs text-gray-400">预览数据为模拟生成</span>
+      </div>
+    </div>
+  `;
+}
+
+function renderPreviewQueryForm(cfg, std) {
+  if (!cfg.queryConditions.length) return '';
+  const fields = std.fields.filter(f => f.active);
+
+  const items = cfg.queryConditions.map(c => {
+    const field = fields.find(f => f.key === c.field);
+    const label = field ? field.label : c.field;
+    let input = '';
+
+    if (c.widgetType === 'select') {
+      input = `<select class="w-full" style="height:32px"><option value="">全部${label}</option><option>选项1</option><option>选项2</option></select>`;
+    } else if (c.widgetType === 'date_range') {
+      input = `<div class="flex gap-1"><input type="text" class="flex-1" placeholder="开始日期" style="height:32px" /><input type="text" class="flex-1" placeholder="结束日期" style="height:32px" /></div>`;
+    } else if (c.widgetType === 'number') {
+      input = `<input type="number" class="w-full" placeholder="请输入${label}" style="height:32px" />`;
+    } else if (c.widgetType === 'multi_select') {
+      input = `<select class="w-full" style="height:32px" multiple><option>选项1</option><option>选项2</option><option>选项3</option></select>`;
+    } else {
+      input = `<input type="text" class="w-full" placeholder="请输入${label}" style="height:32px" ${c.defaultVal ? `value="${escHtml(c.defaultVal)}"` : ''} />`;
+    }
+
+    return `<div class="flex flex-col gap-1" style="min-width:160px">
+      <label class="text-xs text-gray-500">${escHtml(label)}${c.required ? ' <span class="text-red-400">*</span>' : ''}</label>
+      ${input}
+    </div>`;
+  }).join('');
+
+  return `<div class="preview-query-box">
+    <div class="flex flex-wrap gap-4 items-end">
+      ${items}
+      <div class="flex gap-2 pb-0.5">
+        <button class="btn-primary" style="height:32px;padding:0 20px">查询</button>
+        <button class="btn-secondary" style="height:32px;padding:0 16px">重置</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ============================================================
+// 模拟数据生成
+// ============================================================
+function generateMockData(std, cfg, count) {
+  const rows = [];
+  for (let i = 0; i < count; i++) {
+    const row = {};
+    cfg.listFields.forEach(f => {
+      row[f.key] = getMockValue(f, i);
+    });
+    rows.push(row);
+  }
+  return rows;
+}
+
+function getMockValue(field, rowIdx) {
+  const key = field.key;
+  const type = field.type;
+  const label = field.label;
+  const idx = rowIdx + 1;
+
+  const mockMap = {
+    'act_no':    () => `QM2024${String(idx).padStart(4,'0')}`,
+    'act_name':  () => ['清明祭扫活动','烈士陵园扫墓','公墓祭扫','网上祭祀活动'][rowIdx%4],
+    'location':  () => ['丹江口市烈士陵园','十堰市公墓','黄石市纪念馆','襄阳市殡仪馆'][rowIdx%4],
+    'org_unit':  () => ['丹江口市民政局','十堰市民政局','黄石市民政局','襄阳市民政局'][rowIdx%4],
+    'contact':   () => ['张三','李四','王五','赵六','陈七','周八'][rowIdx%6],
+    'phone':     () => `138${String(10000000 + Math.floor(Math.random()*89999999)).slice(0,8)}`,
+    'task_no':   () => `RW2024${String(idx).padStart(4,'0')}`,
+    'task_name': () => ['数据上报','安全检查','系统维护','培训学习'][rowIdx%4],
+    'module':    () => ['基础管控','安全监管','系统管理','综合办公'][rowIdx%4],
+    'resp_unit': () => ['丹江口市公安局','十堰市公安局','黄石市公安局'][rowIdx%3],
+    'owner':     () => ['张三','李四','王五','赵六'][rowIdx%4],
+    'dispute_no':() => `JF2024${String(idx).padStart(4,'0')}`,
+    'dispute_type':() => ['邻里纠纷','家庭矛盾','经济纠纷','土地纠纷'][rowIdx%4],
+    'party_name':() => ['曹虎','李强','王伟','张明','刘洋'][rowIdx%5],
+    'handle_unit':() => ['凉水河派出所','武当山派出所','习家店派出所'][rowIdx%3],
+    'mediator':  () => ['阮仲秋','李明','王刚'][rowIdx%3],
+    'med_status':() => ['调解中','已调解','未受理','已结案'][rowIdx%4],
+    'med_result':() => ['调解成功','调解失败','撤案','达成协议'][rowIdx%4],
+    'stat_no':   () => `TJ2024${String(idx).padStart(4,'0')}`,
+    'std_name':  () => ['人员管理','车辆登记','房屋管理','设备巡检'][rowIdx%4],
+    'name':      () => ['示例项目A','示例项目B','测试项目C','演示项目D'][rowIdx%4],
+    'version':   () => ['v1.0','v2.1','v1.3','v3.0'][rowIdx%4],
+    'remark':    () => ['无','正常','待跟进','已归档'][rowIdx%4],
+    'status':    () => ['进行中','已完成','待处理','已关闭'][rowIdx%4],
+    'id':        () => idx,
+    'sweep_date':() => `2024-04-${String((rowIdx%28)+1).padStart(2,'0')}`,
+    'appoint_num':() => [50,120,80,200,60,150,90,30][rowIdx%8],
+    'actual_num': () => [48,115,76,195,55,142,88,28][rowIdx%8],
+    'issued_at':  () => `2024-${String((rowIdx%12)+1).padStart(2,'0')}-${String((rowIdx%28)+1).padStart(2,'0')}`,
+    'deadline':   () => `2024-${String(Math.min((rowIdx%12)+2,12)).padStart(2,'0')}-28`,
+    'finished_at':() => `2024-${String((rowIdx%12)+1).padStart(2,'0')}-${String(Math.min((rowIdx%28)+5,28)).padStart(2,'0')}`,
+    'complete_rate':() => [95,88,72,100,65,91,83,77][rowIdx%8],
+    'reg_time':   () => `2024-${String((rowIdx%12)+1).padStart(2,'0')}-${String((rowIdx%28)+1).padStart(2,'0')}`,
+    'close_time': () => `2024-${String(Math.min((rowIdx%12)+1,12)).padStart(2,'0')}-${String(Math.min((rowIdx%28)+10,28)).padStart(2,'0')}`,
+    'call_count': () => [1520,860,2340,450,1100,780,3200,920][rowIdx%8],
+    'active_users':() => [320,180,560,95,240,150,680,210][rowIdx%8],
+    'last_used_at':() => `2024-05-${String((rowIdx%28)+1).padStart(2,'0')}`,
+    'avg_resp_ms':() => [120,85,200,65,150,95,230,110][rowIdx%8],
+    'error_count':() => [2,0,5,1,3,0,8,2][rowIdx%8],
+    'avail_rate': () => [99.8,99.9,98.5,99.5,99.2,99.9,97.8,99.6][rowIdx%8],
+    'created_at': () => `2024-${String((rowIdx%12)+1).padStart(2,'0')}-${String((rowIdx%28)+1).padStart(2,'0')}`,
+  };
+
+  if (mockMap[key]) return mockMap[key]();
+
+  // 通用回退
+  if (type === 'number') return Math.floor(Math.random() * 200) + 1;
+  if (type === 'date') {
+    const m = String((rowIdx % 12) + 1).padStart(2,'0');
+    const d = String((rowIdx % 28) + 1).padStart(2,'0');
+    return `2024-${m}-${d}`;
+  }
+  if (type === 'enum') return ['状态A','状态B','状态C'][rowIdx % 3];
+  return `${label}_${idx}`;
+}
+
+// ============================================================
+// 详情弹窗
+// ============================================================
+function openDetailModal(rowIdx) {
+  const std = getStd(currentId);
+  const cfg = configs[currentId];
+  const mockData = generateMockData(std, cfg, 8);
+  const row = mockData[rowIdx];
+  if (!row) return;
+
+  // 所有列展示字段
+  const allFields = cfg.listFields;
+
+  // 判断长文本字段（label含"地址"/"备注"/"描述"等，值较长时跨列）
+  const isLongField = (f) => {
+    const val = String(row[f.key] || '');
+    return val.length > 20 || /地址|备注|描述|说明|原因|事由|场所/.test(f.label);
+  };
+
+  const fieldsHtml = allFields.map(f => {
+    const val = row[f.key] !== undefined ? row[f.key] : '-';
+    const fullClass = isLongField(f) ? 'detail-field-full' : '';
+    return `<div class="detail-field ${fullClass}">
+      <div class="detail-field-label">${escHtml(f.customLabel || f.label)}</div>
+      <div class="detail-field-value">${escHtml(val) || '<span class="text-gray-300">-</span>'}</div>
+    </div>`;
+  }).join('');
+
+  document.getElementById('detailModalBody').innerHTML =
+    `<div class="detail-grid gap-x-8">${fieldsHtml}</div>`;
+  document.getElementById('detailModal').classList.remove('hidden');
+}
+
+// ============================================================
 // 保存配置
 // ============================================================
 function saveConfig() {
@@ -833,7 +1137,7 @@ function showToast(msg) {
 // ESC 关闭弹窗
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape') {
-    ['fieldModal','newModal','joinModal'].forEach(id => {
+    ['fieldModal','newModal','joinModal','detailModal'].forEach(id => {
       if (!document.getElementById(id).classList.contains('hidden')) closeModal(id);
     });
   }
