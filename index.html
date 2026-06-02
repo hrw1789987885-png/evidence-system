@@ -38,6 +38,24 @@
   input[type="text"]:focus, input[type="number"]:focus, select:focus {
     border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.15);
   }
+  .search-select { position: relative; flex: 1; }
+  .search-select-input { width: 100%; padding-right: 30px !important; }
+  .search-select-arrow {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    color: #9ca3af; font-size: 11px; pointer-events: none;
+  }
+  .search-select-menu {
+    position: absolute; z-index: 1010; top: calc(100% + 4px); left: 0; right: 0;
+    max-height: 180px; overflow-y: auto; background: white;
+    border: 1px solid #d1d5db; border-radius: 6px;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+  .search-select-option {
+    width: 100%; text-align: left; padding: 7px 10px; font-size: 13px;
+    color: #374151; background: white; border: none; cursor: pointer;
+  }
+  .search-select-option:hover, .search-select-option.active { background: #eff6ff; color: #1d4ed8; }
+  .search-select-empty { padding: 8px 10px; font-size: 12px; color: #9ca3af; }
   .section-card {
     background: white; border: 1px solid #e5e7eb; border-radius: 8px;
     margin-bottom: 16px; overflow: hidden;
@@ -214,6 +232,13 @@
         </div>
         <div id="newTableList" class="flex flex-col gap-2"></div>
       </div>
+      <div>
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium text-gray-700">模式</label>
+          <button type="button" class="btn-add py-0" onclick="addNewModeSelect()">+ 新增</button>
+        </div>
+        <div id="newModeList" class="flex flex-col gap-2"></div>
+      </div>
     </div>
     <div class="px-6 pb-5 flex justify-end gap-2">
       <button class="btn-secondary" onclick="closeModal('newModal')">取消</button>
@@ -234,6 +259,10 @@
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-1">选择表</label>
         <select id="joinTable" class="w-full" onchange="renderJoinFieldOptions()"></select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">本次新增字段权限</label>
+        <select id="joinPermissionLevel" class="w-full"></select>
       </div>
       <div id="joinFieldOptions" class="border border-gray-200 rounded-lg overflow-hidden"></div>
     </div>
@@ -348,10 +377,22 @@ let currentId = standards[0].id;
 let currentTab = 'list';
 let editingFieldId = null; // 正在编辑字段的标准件id
 let isPreviewMode = false; // 是否处于预览模式
+let previewPermissionLevel = '省级';
 let newTableRows = [];
+let newModeRows = [];
+
+const PERMISSION_LEVELS = ['省级', '市级', '分局', '派出所'];
+const DAMENG_SCHEMA_OPTIONS = [
+  'SYSDBA', 'SYS', 'CTISYS', 'SYSAUDITOR', 'SYSSSO', 'SYSJOB', 'DMHR'
+];
 
 function getDataSourceTableOptions() {
   return [...new Set(standards.map(s => s.table).filter(Boolean))];
+}
+
+function getDamengSchemaOptions() {
+  const savedSchemas = standards.flatMap(s => s.schemas || (s.schema ? [s.schema] : []));
+  return [...new Set([...DAMENG_SCHEMA_OPTIONS, ...savedSchemas].filter(Boolean))];
 }
 
 // 初始化每个标准件的配置
@@ -362,10 +403,11 @@ function ensureConfig(id) {
     configs[id] = {
       listFields: activeFields.map((f, i) => ({
         key: f.key, label: f.label, listVisible: false, visible: true, width: 120,
-        align: 'left', format: '', order: i, join: f.join || false, joinTable: f.joinTable || ''
+        align: 'left', format: '', order: i, permissionLevel: '派出所',
+        join: f.join || false, joinTable: f.joinTable || ''
       })),
       queryConditions: activeFields.slice(0, 2).map(f => ({
-        id: uid(), field: f.key, condType: 'contains', widgetType: 'text', defaultVal: '', required: false
+        id: uid(), field: f.key, condType: 'contains', widgetType: 'text', defaultVal: '', required: false, hidden: false
       })),
       actionButtons: [
         { id: uid(), name: '查看详情', btnType: 'primary', position: 'list-row', behavior: 'open-detail' },
@@ -374,11 +416,22 @@ function ensureConfig(id) {
       ]
     };
   }
+  configs[id].listFields.forEach(f => {
+    if (!f.permissionLevel) f.permissionLevel = '派出所';
+  });
 }
 
 function getStd(id) { return standards.find(s => s.id === id); }
 function deepClone(obj) { return JSON.parse(JSON.stringify(obj)); }
 function uid() { return 'u' + Math.random().toString(36).slice(2, 9); }
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[ch]));
+}
+function jsStringAttr(value) {
+  return escapeHtml(JSON.stringify(value));
+}
 
 // ============================================================
 // 渲染左侧列表
@@ -471,22 +524,86 @@ function confirmFieldEdit() {
 function openNewModal() {
   document.getElementById('newName').value = '';
   newTableRows = [{ id: uid(), value: '' }];
+  newModeRows = [{ id: uid(), value: '' }];
   renderNewTableRows();
+  renderNewModeRows();
   document.getElementById('newModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('newName').focus(), 100);
 }
 
+function getSearchSelectRows(type) {
+  return type === 'mode' ? newModeRows : newTableRows;
+}
+
+function getSearchSelectOptions(type) {
+  return type === 'mode' ? getDamengSchemaOptions() : getDataSourceTableOptions();
+}
+
+function getSearchSelectPlaceholder(type) {
+  return type === 'mode' ? '请选择达梦数据库模式' : '请选择或搜索数据源表';
+}
+
+function renderSearchSelect(type, row) {
+  const options = getSearchSelectOptions(type);
+  const keyword = (row.search ?? row.value ?? '').trim().toLowerCase();
+  const filtered = keyword
+    ? options.filter(item => item.toLowerCase().includes(keyword))
+    : options;
+  const inputHandler = type === 'mode' ? 'filterNewModeOptions' : 'filterNewTableOptions';
+  const focusHandler = type === 'mode' ? 'openNewModeOptions' : 'openNewTableOptions';
+  return `
+    <div class="search-select" id="${type}Select_${row.id}">
+      <input type="text"
+             id="${type}Input_${row.id}"
+             class="search-select-input"
+             value="${escapeHtml(row.search ?? row.value)}"
+             placeholder="${getSearchSelectPlaceholder(type)}"
+             autocomplete="off"
+             oninput="${inputHandler}('${row.id}', this.value)"
+             onfocus="${focusHandler}('${row.id}')" />
+      <span class="search-select-arrow">⌄</span>
+      <div id="${type}Options_${row.id}" class="search-select-menu hidden">
+        ${renderSearchSelectOptions(type, row.id, filtered, row.value)}
+      </div>
+    </div>
+  `;
+}
+
+function renderSearchSelectOptions(type, id, options, selectedValue) {
+  if (!options.length) return '<div class="search-select-empty">无匹配结果</div>';
+  const selectHandler = type === 'mode' ? 'selectNewModeOption' : 'selectNewTableOption';
+  return options.map(option => `
+    <button type="button"
+            class="search-select-option ${selectedValue === option ? 'active' : ''}"
+            onclick="${selectHandler}('${id}', ${jsStringAttr(option)})">
+      ${escapeHtml(option)}
+    </button>
+  `).join('');
+}
+
+function renderSearchSelectOptionMenu(type, id) {
+  const rows = getSearchSelectRows(type);
+  const row = rows.find(item => item.id === id);
+  const menu = document.getElementById(`${type}Options_${id}`);
+  if (!row || !menu) return;
+  const keyword = (row.search ?? row.value ?? '').trim().toLowerCase();
+  const filtered = getSearchSelectOptions(type)
+    .filter(item => !keyword || item.toLowerCase().includes(keyword));
+  menu.innerHTML = renderSearchSelectOptions(type, id, filtered, row.value);
+  menu.classList.remove('hidden');
+}
+
+function closeSearchSelectMenus(exceptId = '') {
+  document.querySelectorAll('.search-select-menu').forEach(menu => {
+    if (menu.id !== exceptId) menu.classList.add('hidden');
+  });
+}
+
 function renderNewTableRows() {
-  const options = getDataSourceTableOptions();
   const wrap = document.getElementById('newTableList');
   wrap.innerHTML = newTableRows.map((row, index) => `
     <div class="flex items-center gap-2">
-      <select id="newTable_${row.id}" class="flex-1" onchange="updateNewTableRow('${row.id}', this.value)">
-        <option value="">请选择数据源表</option>
-        ${options.map(table => `
-          <option value="${table}" ${row.value === table ? 'selected' : ''}>${table}</option>
-        `).join('')}
-      </select>
+      ${renderSearchSelect('table', row)}
       ${index > 0 ? `<button type="button" class="btn-danger" onclick="removeNewTableRow('${row.id}')">删除</button>` : ''}
     </div>
   `).join('');
@@ -499,7 +616,27 @@ function addNewTableSelect() {
 
 function updateNewTableRow(id, value) {
   const row = newTableRows.find(item => item.id === id);
-  if (row) row.value = value;
+  if (row) {
+    row.value = value;
+    row.search = value;
+  }
+}
+
+function filterNewTableOptions(id, value) {
+  updateNewTableRow(id, value);
+  renderSearchSelectOptionMenu('table', id);
+}
+
+function openNewTableOptions(id) {
+  closeSearchSelectMenus(`tableOptions_${id}`);
+  renderSearchSelectOptionMenu('table', id);
+}
+
+function selectNewTableOption(id, value) {
+  updateNewTableRow(id, value);
+  const input = document.getElementById(`tableInput_${id}`);
+  if (input) input.value = value;
+  closeSearchSelectMenus();
 }
 
 function removeNewTableRow(id) {
@@ -508,15 +645,63 @@ function removeNewTableRow(id) {
   renderNewTableRows();
 }
 
+function renderNewModeRows() {
+  const wrap = document.getElementById('newModeList');
+  wrap.innerHTML = newModeRows.map((row, index) => `
+    <div class="flex items-center gap-2">
+      ${renderSearchSelect('mode', row)}
+      ${index > 0 ? `<button type="button" class="btn-danger" onclick="removeNewModeRow('${row.id}')">删除</button>` : ''}
+    </div>
+  `).join('');
+}
+
+function addNewModeSelect() {
+  newModeRows.push({ id: uid(), value: '' });
+  renderNewModeRows();
+}
+
+function updateNewModeRow(id, value) {
+  const row = newModeRows.find(item => item.id === id);
+  if (row) {
+    row.value = value;
+    row.search = value;
+  }
+}
+
+function filterNewModeOptions(id, value) {
+  updateNewModeRow(id, value);
+  renderSearchSelectOptionMenu('mode', id);
+}
+
+function openNewModeOptions(id) {
+  closeSearchSelectMenus(`modeOptions_${id}`);
+  renderSearchSelectOptionMenu('mode', id);
+}
+
+function selectNewModeOption(id, value) {
+  updateNewModeRow(id, value);
+  const input = document.getElementById(`modeInput_${id}`);
+  if (input) input.value = value;
+  closeSearchSelectMenus();
+}
+
+function removeNewModeRow(id) {
+  newModeRows = newModeRows.filter(row => row.id !== id);
+  if (!newModeRows.length) addNewModeSelect();
+  renderNewModeRows();
+}
+
 function confirmNewStandard() {
   const name = document.getElementById('newName').value.trim();
   const tables = newTableRows.map(row => row.value.trim()).filter(Boolean);
+  const schemas = newModeRows.map(row => row.value.trim()).filter(Boolean);
   const table = tables[0] || name.toLowerCase().replace(/\s+/g, '_');
   if (!name) { alert('请输入列表表单名称'); return; }
   if (standards.find(s => s.name === name)) { alert('名称已存在，请换一个名称'); return; }
   const id = 's' + uid();
   const newStd = {
     id, name, table, tables: tables.length ? tables : [table],
+    schema: schemas[0] || '', schemas,
     fields: [
       { key: 'id', label: 'ID', type: 'number', active: true, join: false },
       { key: 'name', label: '名称', type: 'string', active: true, join: false },
@@ -527,10 +712,10 @@ function confirmNewStandard() {
   };
   standards.push(newStd);
   closeModal('newModal');
-  // 切换到新标准件，并弹出字段编辑
+  // 切换到新标准件
   currentId = id;
   renderSidebar();
-  openFieldModal(id);
+  renderWorkspace();
 }
 
 // ============================================================
@@ -584,6 +769,11 @@ function renderListTab(std, cfg) {
                  onchange="listFieldChange('${f.key}','customLabel',this.value)" /></td>
       <td><input type="number" value="${f.width}" style="width:64px" min="60" max="400"
                  onchange="listFieldChange('${f.key}','width',+this.value)" /></td>
+      <td>
+        <select style="width:86px" onchange="listFieldChange('${f.key}','permissionLevel',this.value)">
+          ${PERMISSION_LEVELS.map(level => `<option value="${level}" ${f.permissionLevel === level ? 'selected' : ''}>${level}</option>`).join('')}
+        </select>
+      </td>
       ${f.join ? `<td><span class="tag-text tag-join">联表·${f.joinTable}</span></td>` : '<td></td>'}
     </tr>
   `).join('');
@@ -603,6 +793,7 @@ function renderListTab(std, cfg) {
             <th>Key</th>
             <th>列标题</th>
             <th>宽度</th>
+            <th>权限</th>
             <th>联表</th>
           </tr></thead>
           <tbody id="listFieldBody">${rows}</tbody>
@@ -629,6 +820,7 @@ function renderListTab(std, cfg) {
             <th>控件类型</th>
             <th>默认值</th>
             <th style="width:52px">必填</th>
+            <th style="width:52px">隐藏</th>
             <th style="width:52px">操作</th>
           </tr></thead>
           <tbody id="queryBody">${renderQueryRows()}</tbody>
@@ -666,6 +858,8 @@ function renderQueryRows() {
                  onchange="queryCondChange('${c.id}','defaultVal',this.value)" /></td>
       <td class="text-center"><input type="checkbox" class="field-checkbox" ${c.required?'checked':''}
                  onchange="queryCondChange('${c.id}','required',this.checked)" /></td>
+      <td class="text-center"><input type="checkbox" class="field-checkbox" ${c.hidden?'checked':''}
+                 onchange="queryCondChange('${c.id}','hidden',this.checked)" /></td>
       <td><button class="btn-danger" onclick="removeQueryCond('${c.id}')">删除</button></td>
     </tr>
   `).join('');
@@ -740,7 +934,7 @@ function addQueryCondition() {
   const firstField = std.fields.find(f => f.active);
   const newCond = {
     id: uid(), field: firstField?.key || '', condType: 'contains',
-    widgetType: 'text', defaultVal: '', required: false
+    widgetType: 'text', defaultVal: '', required: false, hidden: false
   };
   configs[currentId].queryConditions.push(newCond);
   // 重新渲染查询条件
@@ -771,8 +965,12 @@ function addActionButton() {
 // ============================================================
 function openJoinModal() {
   const select = document.getElementById('joinTable');
+  const permissionSelect = document.getElementById('joinPermissionLevel');
   select.innerHTML = standards.map(s => `<option value="${s.id}">${s.table}（${s.name}）</option>`).join('');
   select.value = currentId;
+  permissionSelect.innerHTML = PERMISSION_LEVELS.map(level =>
+    `<option value="${level}" ${level === '派出所' ? 'selected' : ''}>${level}</option>`
+  ).join('');
   renderJoinFieldOptions();
   document.getElementById('joinModal').classList.remove('hidden');
 }
@@ -817,6 +1015,7 @@ function confirmJoinField() {
   const selectedId = document.getElementById('joinTable').value;
   const selectedStd = getStd(selectedId);
   const std = getStd(currentId);
+  const permissionLevel = document.getElementById('joinPermissionLevel')?.value || '派出所';
   const checkedFields = Array.from(document.querySelectorAll('.join-field-checkbox:checked')).map(el => el.value);
   if (!checkedFields.length) { alert('请至少勾选一个字段'); return; }
 
@@ -836,7 +1035,7 @@ function confirmJoinField() {
     }
     configs[currentId].listFields.push({
       key, label: normalized.label, listVisible: false, visible: true, width: 120, align: 'left', format: '',
-      order: configs[currentId].listFields.length, join: normalized.join,
+      order: configs[currentId].listFields.length, permissionLevel, join: normalized.join,
       joinTable: normalized.joinTable
     });
     addedCount++;
@@ -905,18 +1104,46 @@ function togglePreview() {
   renderWorkspace();
 }
 
+function canViewByPermission(field, viewerLevel = previewPermissionLevel) {
+  const viewerIndex = PERMISSION_LEVELS.indexOf(viewerLevel);
+  const fieldIndex = PERMISSION_LEVELS.indexOf(field.permissionLevel || '派出所');
+  if (viewerIndex < 0 || fieldIndex < 0) return true;
+  return viewerIndex <= fieldIndex;
+}
+
+function changePreviewPermissionLevel(level) {
+  previewPermissionLevel = level;
+  renderWorkspace();
+}
+
+function renderPreviewPermissionSelect() {
+  return `
+    <div class="flex justify-end mb-3">
+      <label class="flex items-center gap-2 text-sm text-gray-600">
+        <span>预览等级</span>
+        <select style="width:96px;height:32px" onchange="changePreviewPermissionLevel(this.value)">
+          ${PERMISSION_LEVELS.map(level => `<option value="${level}" ${previewPermissionLevel === level ? 'selected' : ''}>${level}</option>`).join('')}
+        </select>
+      </label>
+    </div>
+  `;
+}
+
 function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function renderPreview(std, cfg) {
-  const visibleFields = cfg.listFields.filter(f => f.listVisible);
+  const visibleFields = cfg.listFields.filter(f => f.listVisible && canViewByPermission(f));
   const allFields = cfg.listFields;
   if (!visibleFields.length) {
-    return `<div class="text-center text-gray-400 py-20">
-      <p class="text-lg mb-2">暂无列表展示字段</p>
-      <p class="text-sm">请在"列展示字段"中开启需要展示的字段</p>
-    </div>`;
+    return `
+      ${renderPreviewPermissionSelect()}
+      <div class="text-center text-gray-400 py-20">
+        <p class="text-lg mb-2">暂无列表展示字段</p>
+        <p class="text-sm">请在"列展示字段"中开启需要展示的字段，或调整当前预览等级</p>
+      </div>
+    `;
   }
   const mockData = generateMockData(std, cfg, 8);
 
@@ -937,6 +1164,7 @@ function renderPreview(std, cfg) {
   }).join('');
 
   return `
+    ${renderPreviewPermissionSelect()}
     ${queryHtml}
     <div class="preview-table-wrap">
       <div class="overflow-x-auto">
@@ -956,8 +1184,15 @@ function renderPreview(std, cfg) {
 function renderPreviewQueryForm(cfg, std) {
   if (!cfg.queryConditions.length) return '';
   const fields = std.fields.filter(f => f.active);
+  const listFieldMap = new Map(cfg.listFields.map(f => [f.key, f]));
 
-  const items = cfg.queryConditions.map(c => {
+  const visibleConditions = cfg.queryConditions.filter(c => {
+    const listField = listFieldMap.get(c.field);
+    return !listField || canViewByPermission(listField);
+  });
+  if (!visibleConditions.length) return '';
+
+  const items = visibleConditions.map(c => {
     const field = fields.find(f => f.key === c.field);
     const label = field ? field.label : c.field;
     let input = '';
@@ -1080,7 +1315,7 @@ function openDetailModal(rowIdx) {
   if (!row) return;
 
   // 所有列展示字段
-  const allFields = cfg.listFields;
+  const allFields = isPreviewMode ? cfg.listFields.filter(f => canViewByPermission(f)) : cfg.listFields;
 
   // 判断长文本字段（label含"地址"/"备注"/"描述"等，值较长时跨列）
   const isLongField = (f) => {
@@ -1140,7 +1375,12 @@ document.addEventListener('keydown', e => {
     ['fieldModal','newModal','joinModal','detailModal'].forEach(id => {
       if (!document.getElementById(id).classList.contains('hidden')) closeModal(id);
     });
+    closeSearchSelectMenus();
   }
+});
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-select')) closeSearchSelectMenus();
 });
 
 // ============================================================
