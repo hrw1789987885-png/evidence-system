@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -131,6 +131,31 @@
   ::-webkit-scrollbar { width: 6px; height: 6px; }
   ::-webkit-scrollbar-track { background: #f1f5f9; }
   ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+  /* 统计配置 */
+  .stat-card {
+    background: white; border: 1px solid #e5e7eb; border-radius: 8px;
+    padding: 12px 16px; display: flex; flex-direction: column; gap: 2px;
+  }
+  .stat-card-value { font-size: 20px; font-weight: 700; color: #1e293b; }
+  .stat-card-label { font-size: 11px; color: #6b7280; }
+  .stat-card-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+  .breadcrumb-item { font-size: 13px; color: #6b7280; cursor: pointer; }
+  .breadcrumb-item:hover { color: #3b82f6; }
+  .breadcrumb-item.active { color: #1e293b; font-weight: 600; cursor: default; }
+  .breadcrumb-sep { color: #d1d5db; margin: 0 6px; font-size: 12px; }
+  .drill-link { color: #3b82f6; font-size: 13px; cursor: pointer; font-weight: 500; }
+  .drill-link:hover { color: #2563eb; text-decoration: underline; }
+  .stat-table th { white-space: nowrap; }
+  .stat-table td { white-space: nowrap; }
+  .stat-table tr[onclick]:hover { background: #f0f7ff !important; }
+
+  /* 一级菜单 */
+  .menu-sidebar { width: 200px; background: #1e293b; display: flex; flex-direction: column; flex-shrink: 0; }
+  .menu-sidebar-header { padding: 16px 16px 12px; color: #94a3b8; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid #334155; }
+  .menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; color: #cbd5e1; font-size: 14px; cursor: pointer; transition: all 0.15s; border-left: 3px solid transparent; user-select: none; }
+  .menu-item:hover { background: #334155; color: #f1f5f9; }
+  .menu-item.active { background: #1e3a5f; color: #60a5fa; border-left-color: #3b82f6; font-weight: 600; }
+  .menu-icon { width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; font-size: 15px; }
 </style>
 </head>
 <body class="bg-gray-50 h-screen flex flex-col overflow-hidden">
@@ -143,14 +168,27 @@
       <rect x="1" y="9" width="6" height="6" rx="1"/><rect x="9" y="9" width="6" height="6" rx="1"/>
     </svg>
   </div>
-  <span class="font-semibold text-gray-800 text-base">列表表单配置</span>
-  <span class="text-gray-300 text-sm ml-1">/ 列表表单配置后台</span>
+  <span class="font-semibold text-gray-800 text-base">基础管控自定义配置</span>
+  <span class="text-gray-300 text-sm ml-1">/ 后台管理系统</span>
   <div class="ml-auto flex items-center gap-2 text-xs text-gray-400">
     <span id="saveStatus">未保存</span>
   </div>
 </header>
 
 <div class="flex flex-1 overflow-hidden">
+  <!-- =========== 一级菜单 =========== -->
+  <nav class="menu-sidebar">
+    <div class="menu-sidebar-header">功能导航</div>
+    <div class="menu-item active" id="menu-list" onclick="switchMenu('list')">
+      <span class="menu-icon">📋</span>列表表单配置
+    </div>
+    <div class="menu-item" id="menu-stats" onclick="switchMenu('stats')">
+      <span class="menu-icon">📊</span>统计配置
+    </div>
+  </nav>
+
+  <!-- =========== 列表表单配置页面 =========== -->
+  <div id="page-list-config" class="flex flex-1 overflow-hidden">
 
   <!-- =========== 左侧列表表单 =========== -->
   <aside class="w-64 bg-white border-r border-gray-200 flex flex-col shrink-0">
@@ -190,8 +228,98 @@
       <button class="btn-primary" onclick="saveConfig()">💾 保存配置</button>
     </div>
   </main>
-</div>
+  </div><!-- end page-list-config -->
 
+  <!-- =========== 统计配置页面 =========== -->
+  <div id="page-stats-config" class="flex-1 flex flex-col overflow-hidden hidden">
+
+    <!-- 编辑模式 -->
+    <div id="statsEditMode" class="flex-1 overflow-y-auto p-6">
+      <div class="section-card">
+        <div class="section-header">
+          <span class="section-title">📊 统计指标配置</span>
+          <button class="btn-add" onclick="addStatsMetric()">+ 新增指标</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full" id="statsMetricTable">
+            <thead><tr>
+              <th style="width:32px"></th>
+              <th style="width:40px">序号</th>
+              <th>指标名称</th>
+              <th>数据源表</th>
+              <th>字段名</th>
+              <th style="width:80px">单位</th>
+              <th style="width:80px">权限</th>
+              <th style="width:80px">操作</th>
+            </tr></thead>
+            <tbody id="statsMetricBody"></tbody>
+          </table>
+        </div>
+        <div id="statsMetricEmpty" class="hidden text-center text-gray-400 py-10 text-sm">
+          暂未配置指标，点击"+ 新增指标"开始配置
+        </div>
+      </div>
+
+      <!-- 预览模式内容（编辑模式下隐藏） -->
+      <div id="statsPreviewContent" class="hidden">
+        <input type="hidden" id="statsLevel" value="市级" />
+        <div class="flex items-center justify-between flex-wrap gap-4 mb-5">
+          <div class="flex items-center gap-4 flex-wrap">
+            <div class="flex items-center gap-2">
+              <label class="text-sm text-gray-600 whitespace-nowrap">部门名称</label>
+              <input type="text" id="statsDeptName" class="w-44" placeholder="输入部门名称搜索" />
+            </div>
+            <button class="btn-primary" onclick="queryStats()">🔍 查询</button>
+            <button class="btn-secondary" onclick="resetStatsQuery()">重置</button>
+          </div>
+          <div class="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-4 py-2">
+            <label class="text-sm text-gray-600 whitespace-nowrap">预览账号等级</label>
+            <select id="statsPermLevel" class="w-24" onchange="onStatsPermLevelChange()">
+              <option value="省级">省级</option>
+              <option value="市级" selected>市级</option>
+              <option value="分局">分局</option>
+              <option value="派出所">派出所</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- 面包屑导航 -->
+        <div class="flex items-center gap-0 mb-4" id="statsBreadcrumb"></div>
+
+        <!-- 汇总卡片 -->
+        <div class="grid grid-cols-2 gap-4 mb-5" id="statsCards"></div>
+
+        <!-- 下级部门表格 -->
+        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+          <div class="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
+            <span class="font-semibold text-sm text-gray-700" id="statsTableTitle">下级部门列表</span>
+            <span class="text-xs text-gray-400" id="statsTableCount"></span>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full stat-table" id="statsTable">
+              <thead><tr>
+                <th>序号</th>
+                <th>部门名称</th>
+                <th>户数</th>
+                <th>占比</th>
+                <th>操作</th>
+              </tr></thead>
+              <tbody id="statsTableBody"></tbody>
+            </table>
+          </div>
+          <div id="statsEmpty" class="hidden text-center text-gray-400 py-16 text-sm">
+            暂无下级部门数据
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 底部按钮栏 -->
+    <div class="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-end gap-2 shrink-0">
+      <button class="btn-secondary" id="statsPreviewBtn" onclick="toggleStatsPreview()">👁 预览</button>
+      <button class="btn-primary" onclick="saveStatsConfig()">💾 保存配置</button>
+    </div>
+  </div>
 <!-- ==================== 字段编辑弹窗 ==================== -->
 <div id="fieldModal" class="modal-overlay hidden" onclick="closeModalOnOverlay(event,'fieldModal')">
   <div class="bg-white rounded-xl w-[600px] max-h-[80vh] flex flex-col shadow-2xl">
@@ -377,6 +505,18 @@ let currentId = standards[0].id;
 let currentTab = 'list';
 let editingFieldId = null; // 正在编辑字段的标准件id
 let isPreviewMode = false; // 是否处于预览模式
+let currentMenu = 'list'; // 当前一级菜单
+
+// ============================================================
+// 一级菜单切换
+// ============================================================
+function switchMenu(menu) {
+  currentMenu = menu;
+  document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('menu-' + menu).classList.add('active');
+  document.getElementById('page-list-config').classList.toggle('hidden', menu !== 'list');
+  document.getElementById('page-stats-config').classList.toggle('hidden', menu !== 'stats');
+}
 let previewPermissionLevel = '省级';
 let newTableRows = [];
 let newModeRows = [];
@@ -1391,6 +1531,562 @@ document.addEventListener('click', e => {
   renderSidebar();
   renderWorkspace();
 })();
-</script>
+
+// ============================================================
+// ============================================================
+// 统计配置 - 模拟数据（完整树形层级）
+// ============================================================
+const STATS_TREE = {
+  name: '省级', level: '省级', households: 982600,
+  expanded: true,
+  children: [
+    {
+      name: '湖北省', level: '市级', households: 982600,
+      expanded: true,
+      children: [
+        {
+          name: '武汉市', level: '分局', households: 321800,
+          expanded: true,
+          children: [
+            { name: '武昌分局', level: '派出所', households: 58300, expanded: true, children: [
+              { name: '水果湖派出所', level: '派出所', households: 12800, expanded: false, children: [] },
+              { name: '中南路派出所', level: '派出所', households: 11500, expanded: false, children: [] },
+              { name: '积玉桥派出所', level: '派出所', households: 10200, expanded: false, children: [] },
+              { name: '首义路派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '粮道街派出所', level: '派出所', households: 8500, expanded: false, children: [] },
+              { name: '杨园派出所', level: '派出所', households: 5500, expanded: false, children: [] },
+            ]},
+            { name: '江岸分局', level: '派出所', households: 52300, expanded: true, children: [
+              { name: '大智街派出所', level: '派出所', households: 11200, expanded: false, children: [] },
+              { name: '一元街派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '车站街派出所', level: '派出所', households: 10500, expanded: false, children: [] },
+              { name: '四唯街派出所', level: '派出所', households: 9200, expanded: false, children: [] },
+              { name: '后湖派出所', level: '派出所', households: 11600, expanded: false, children: [] },
+            ]},
+            { name: '洪山分局', level: '派出所', households: 48600, expanded: true, children: [
+              { name: '珞南街派出所', level: '派出所', households: 13500, expanded: false, children: [] },
+              { name: '关山街派出所', level: '派出所', households: 12100, expanded: false, children: [] },
+              { name: '狮子山派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '和平街派出所', level: '派出所', households: 13200, expanded: false, children: [] },
+            ]},
+            { name: '汉阳分局', level: '派出所', households: 42500, expanded: true, children: [
+              { name: '建桥街派出所', level: '派出所', households: 10800, expanded: false, children: [] },
+              { name: '鹦鹉街派出所', level: '派出所', households: 9500, expanded: false, children: [] },
+              { name: '洲头街派出所', level: '派出所', households: 10200, expanded: false, children: [] },
+              { name: '琴断口派出所', level: '派出所', households: 12000, expanded: false, children: [] },
+            ]},
+            { name: '江汉分局', level: '派出所', households: 38600, expanded: true, children: [
+              { name: '民族街派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '民权街派出所', level: '派出所', households: 9200, expanded: false, children: [] },
+              { name: '花楼街派出所', level: '派出所', households: 8500, expanded: false, children: [] },
+              { name: '常青派出所', level: '派出所', households: 11100, expanded: false, children: [] },
+            ]},
+            { name: '硚口分局', level: '派出所', households: 36200, expanded: true, children: [
+              { name: '汉正街派出所', level: '派出所', households: 12800, expanded: false, children: [] },
+              { name: '宝丰街派出所', level: '派出所', households: 8600, expanded: false, children: [] },
+              { name: '古田派出所', level: '派出所', households: 7500, expanded: false, children: [] },
+              { name: '长丰派出所', level: '派出所', households: 7300, expanded: false, children: [] },
+            ]},
+            { name: '青山分局', level: '派出所', households: 45300, expanded: true, children: [
+              { name: '红钢城派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+              { name: '新沟桥派出所', level: '派出所', households: 10500, expanded: false, children: [] },
+              { name: '冶金街派出所', level: '派出所', households: 11200, expanded: false, children: [] },
+              { name: '钢花村派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+            ]},
+          ]
+        },
+        {
+          name: '宜昌市', level: '分局', households: 156200,
+          expanded: true,
+          children: [
+            { name: '西陵分局', level: '派出所', households: 38500, expanded: true, children: [
+              { name: '学院街派出所', level: '派出所', households: 10200, expanded: false, children: [] },
+              { name: '云集街派出所', level: '派出所', households: 9500, expanded: false, children: [] },
+              { name: '西坝派出所', level: '派出所', households: 8800, expanded: false, children: [] },
+              { name: '葛洲坝派出所', level: '派出所', households: 10000, expanded: false, children: [] },
+            ]},
+            { name: '伍家岗分局', level: '派出所', households: 35200, expanded: true, children: [
+              { name: '大公桥派出所', level: '派出所', households: 9200, expanded: false, children: [] },
+              { name: '万寿桥派出所', level: '派出所', households: 8800, expanded: false, children: [] },
+              { name: '宝塔河派出所', level: '派出所', households: 8500, expanded: false, children: [] },
+              { name: '伍家派出所', level: '派出所', households: 8700, expanded: false, children: [] },
+            ]},
+            { name: '夷陵分局', level: '派出所', households: 48600, expanded: true, children: [
+              { name: '小溪塔派出所', level: '派出所', households: 13500, expanded: false, children: [] },
+              { name: '龙泉派出所', level: '派出所', households: 10200, expanded: false, children: [] },
+              { name: '鸦鹊岭派出所', level: '派出所', households: 8500, expanded: false, children: [] },
+              { name: '黄花派出所', level: '派出所', households: 7200, expanded: false, children: [] },
+              { name: '樟村坪派出所', level: '派出所', households: 9200, expanded: false, children: [] },
+            ]},
+            { name: '点军分局', level: '派出所', households: 33900, expanded: true, children: [
+              { name: '点军派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '联棚派出所', level: '派出所', households: 8500, expanded: false, children: [] },
+              { name: '土城派出所', level: '派出所', households: 7600, expanded: false, children: [] },
+              { name: '桥边派出所', level: '派出所', households: 8000, expanded: false, children: [] },
+            ]},
+          ]
+        },
+        {
+          name: '襄阳市', level: '分局', households: 142500,
+          expanded: true,
+          children: [
+            { name: '襄城分局', level: '派出所', households: 48800, expanded: true, children: [
+              { name: '古城派出所', level: '派出所', households: 13200, expanded: false, children: [] },
+              { name: '真武山派出所', level: '派出所', households: 10800, expanded: false, children: [] },
+              { name: '檀溪派出所', level: '派出所', households: 11500, expanded: false, children: [] },
+              { name: '庞公派出所', level: '派出所', households: 13300, expanded: false, children: [] },
+            ]},
+            { name: '樊城分局', level: '派出所', households: 52300, expanded: true, children: [
+              { name: '汉江派出所', level: '派出所', households: 14200, expanded: false, children: [] },
+              { name: '王寨派出所', level: '派出所', households: 12800, expanded: false, children: [] },
+              { name: '中原派出所', level: '派出所', households: 13500, expanded: false, children: [] },
+              { name: '清河口派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+            ]},
+            { name: '襄州分局', level: '派出所', households: 41400, expanded: true, children: [
+              { name: '张湾派出所', level: '派出所', households: 12800, expanded: false, children: [] },
+              { name: '肖湾派出所', level: '派出所', households: 9800, expanded: false, children: [] },
+              { name: '双沟派出所', level: '派出所', households: 9500, expanded: false, children: [] },
+              { name: '伙牌派出所', level: '派出所', households: 9300, expanded: false, children: [] },
+            ]},
+          ]
+        },
+        {
+          name: '荆州市', level: '分局', households: 128600,
+          expanded: true,
+          children: [
+            { name: '沙市分局', level: '派出所', households: 45200, expanded: true, children: [
+              { name: '中山路派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+              { name: '崇文街派出所', level: '派出所', households: 10500, expanded: false, children: [] },
+              { name: '解放路派出所', level: '派出所', households: 11200, expanded: false, children: [] },
+              { name: '胜利街派出所', level: '派出所', households: 11700, expanded: false, children: [] },
+            ]},
+            { name: '荆州分局', level: '派出所', households: 48200, expanded: true, children: [
+              { name: '东城派出所', level: '派出所', households: 13200, expanded: false, children: [] },
+              { name: '西城派出所', level: '派出所', households: 11200, expanded: false, children: [] },
+              { name: '城南派出所', level: '派出所', households: 12500, expanded: false, children: [] },
+              { name: '郢城派出所', level: '派出所', households: 11300, expanded: false, children: [] },
+            ]},
+            { name: '公安分局', level: '派出所', households: 35200, expanded: true, children: [
+              { name: '斗湖堤派出所', level: '派出所', households: 12800, expanded: false, children: [] },
+              { name: '埠河派出所', level: '派出所', households: 8200, expanded: false, children: [] },
+              { name: '杨家厂派出所', level: '派出所', households: 7500, expanded: false, children: [] },
+              { name: '南平派出所', level: '派出所', households: 6700, expanded: false, children: [] },
+            ]},
+          ]
+        },
+        { name: '黄石市', level: '分局', households: 82600, expanded: false, children: [
+          { name: '黄石港分局', level: '派出所', households: 28500, expanded: false, children: [] },
+          { name: '西塞山分局', level: '派出所', households: 22300, expanded: false, children: [] },
+          { name: '下陆分局', level: '派出所', households: 18600, expanded: false, children: [] },
+          { name: '铁山分局', level: '派出所', households: 13200, expanded: false, children: [] },
+        ]},
+        { name: '十堰市', level: '分局', households: 65300, expanded: false, children: [
+          { name: '茅箭分局', level: '派出所', households: 22800, expanded: false, children: [] },
+          { name: '张湾分局', level: '派出所', households: 21500, expanded: false, children: [] },
+          { name: '郧阳分局', level: '派出所', households: 21000, expanded: false, children: [] },
+        ]},
+        { name: '鄂州市', level: '分局', households: 48200, expanded: false, children: [
+          { name: '鄂城分局', level: '派出所', households: 26500, expanded: false, children: [] },
+          { name: '华容分局', level: '派出所', households: 12800, expanded: false, children: [] },
+          { name: '梁子湖分局', level: '派出所', households: 8900, expanded: false, children: [] },
+        ]},
+        { name: '孝感市', level: '分局', households: 37400, expanded: false, children: [
+          { name: '孝南分局', level: '派出所', households: 21200, expanded: false, children: [] },
+          { name: '汉川分局', level: '派出所', households: 16200, expanded: false, children: [] },
+        ]},
+      ]
+    },
+  ]
+};
+
+// ============================================================
+// ============================================================
+// ============================================================
+// 统计配置 - 指标数据
+// ============================================================
+const STATS_CONFIG_KEY = 'sc_stats_metrics';
+let statsMetrics = JSON.parse(localStorage.getItem(STATS_CONFIG_KEY) || 'null') || [
+  { id: 'm1', name: '户数', table: 'household', field: 'household_count', unit: '户', order: 1 },
+  { id: 'm2', name: '人口数', table: 'household', field: 'population', unit: '人', order: 2 },
+];
+let isStatsPreviewMode = false;
+let statsPreviewPermLevel = '市级'; // 预览账号等级
+
+function uid2() { return 'm' + Date.now() + Math.random().toString(36).slice(2, 6); }
+
+// ============================================================
+// 统计工具函数
+// ============================================================
+function findNode(path, node = STATS_TREE) {
+  if (!path.length) return node;
+  const child = node.children.find(c => c.name === path[0]);
+  return child ? findNode(path.slice(1), child) : null;
+}
+
+function countChildren(node) {
+  return node.children.length;
+}
+
+function sumChildrenHouseholds(node) {
+  return node.children.reduce((s, c) => s + c.households, 0);
+}
+
+// ============================================================
+// 统计配置状态
+// ============================================================
+let statsState = {
+  breadcrumb: [{ name: '湖北省', level: '市级' }],
+  currentNode: STATS_TREE.children[0]
+};
+
+// ============================================================
+// 编辑模式 - 指标配置
+// ============================================================
+function renderStatsMetrics() {
+  const tbody = document.getElementById('statsMetricBody');
+  const emptyEl = document.getElementById('statsMetricEmpty');
+
+  if (!statsMetrics.length) {
+    tbody.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  emptyEl.classList.add('hidden');
+  const tables = getDataSourceTableOptions();
+
+  tbody.innerHTML = statsMetrics.map((m, i) => `
+    <tr id="smrow_${m.id}" draggable="true"
+        ondragstart="statsDragStart(event,'${m.id}')"
+        ondragover="statsDragOver(event)"
+        ondrop="statsDropRow(event,'${m.id}')"
+        ondragleave="statsDragLeave(event)">
+      <td class="drag-handle text-gray-300 text-lg px-2">⠿</td>
+      <td class="text-gray-400 text-center">${i + 1}</td>
+      <td><input type="text" value="${m.name}" style="width:100px"
+           onchange="updateStatsMetric('${m.id}','name',this.value)" /></td>
+      <td>
+        <select style="width:130px" onchange="updateStatsMetric('${m.id}','table',this.value)">
+          ${tables.map(t => `<option value="${t}" ${m.table === t ? 'selected' : ''}>${t}</option>`).join('')}
+        </select>
+      </td>
+      <td><input type="text" value="${m.field}" style="width:120px"
+           onchange="updateStatsMetric('${m.id}','field',this.value)" /></td>
+      <td><input type="text" value="${m.unit}" style="width:60px"
+           onchange="updateStatsMetric('${m.id}','unit',this.value)" /></td>
+      <td>
+        <select style="width:86px" onchange="updateStatsMetric('${m.id}','permissionLevel',this.value)">
+          ${PERMISSION_LEVELS.map(level => `<option value="${level}" ${(m.permissionLevel || '派出所') === level ? 'selected' : ''}>${level}</option>`).join('')}
+        </select>
+      </td>
+      <td>
+        <button class="btn-danger" onclick="deleteStatsMetric('${m.id}')">删除</button>
+      </td>
+    </tr>
+  `).join('');
+}
+function addStatsMetric() {
+  statsMetrics.push({ id: uid2(), name: '', table: getDataSourceTableOptions()[0] || '', field: '', unit: '', order: statsMetrics.length + 1, permissionLevel: '派出所' });
+  renderStatsMetrics();
+}
+
+function updateStatsMetric(id, key, value) {
+  const m = statsMetrics.find(m => m.id === id);
+  if (m) { m[key] = value; }
+}
+
+function deleteStatsMetric(id) {
+  statsMetrics = statsMetrics.filter(m => m.id !== id);
+  renderStatsMetrics();
+}
+
+let statsDragKey = null;
+function statsDragStart(e, id) {
+  statsDragKey = id;
+  e.currentTarget.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+}
+function statsDragOver(e) {
+  e.preventDefault();
+  e.currentTarget.classList.add('drag-over');
+}
+function statsDragLeave(e) {
+  e.currentTarget.classList.remove('drag-over');
+}
+function statsDropRow(e, targetId) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  if (statsDragKey === targetId) return;
+  const fromIdx = statsMetrics.findIndex(m => m.id === statsDragKey);
+  const toIdx = statsMetrics.findIndex(m => m.id === targetId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [item] = statsMetrics.splice(fromIdx, 1);
+  statsMetrics.splice(toIdx, 0, item);
+  renderStatsMetrics();
+  statsDragKey = null;
+}
+
+function saveStatsConfig() {
+  localStorage.setItem(STATS_CONFIG_KEY, JSON.stringify(statsMetrics));
+  showToast('统计配置已保存');
+}
+
+// ============================================================
+// 预览模式切换
+// ============================================================
+function toggleStatsPreview() {
+  isStatsPreviewMode = !isStatsPreviewMode;
+  updateStatsPreviewBtn();
+  if (isStatsPreviewMode) {
+    document.getElementById('statsMetricTable').closest('.section-card').classList.add('hidden');
+    document.getElementById('statsPreviewContent').classList.remove('hidden');
+    renderStatsPage();
+  } else {
+    document.getElementById('statsMetricTable').closest('.section-card').classList.remove('hidden');
+    document.getElementById('statsPreviewContent').classList.add('hidden');
+  }
+}
+
+function canViewMetricByPerm(metric) {
+  const viewerIdx = PERMISSION_LEVELS.indexOf(statsPreviewPermLevel);
+  const metricIdx = PERMISSION_LEVELS.indexOf(metric.permissionLevel || '派出所');
+  if (viewerIdx < 0 || metricIdx < 0) return true;
+  return viewerIdx <= metricIdx;
+}
+
+function onStatsPermLevelChange() {
+  statsPreviewPermLevel = document.getElementById('statsPermLevel').value;
+  renderStatsPage();
+}
+
+function updateStatsPreviewBtn() {
+  const btn = document.getElementById('statsPreviewBtn');
+  if (!btn) return;
+  if (isStatsPreviewMode) {
+    btn.textContent = '✏ 返回编辑';
+    btn.className = 'btn-primary';
+  } else {
+    btn.textContent = '👁 预览';
+    btn.className = 'btn-secondary';
+  }
+}
+
+// ============================================================
+// 统计查询
+// ============================================================
+function queryStats() {
+  const level = document.getElementById('statsLevel').value;
+  const deptName = document.getElementById('statsDeptName').value.trim();
+
+  let target = STATS_TREE;
+  let bc = [{ name: '省级', level: '省级' }];
+
+  if (deptName) {
+    const found = findNodeByName(STATS_TREE, deptName);
+    if (found) {
+      target = found.node;
+      bc = found.path.map((name, i) => {
+        const levels = ['省级', '市级', '分局', '派出所'];
+        return { name, level: levels[Math.min(i, 3)] };
+      });
+    }
+  } else if (level !== '省级') {
+    const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局' };
+    const found = findNodeByName(STATS_TREE, defaultMap[level] || '湖北省');
+    if (found) {
+      target = found.node;
+      bc = found.path.map((name, i) => {
+        const levels = ['省级', '市级', '分局', '派出所'];
+        return { name, level: levels[Math.min(i, 3)] };
+      });
+    }
+  }
+
+  statsState.currentNode = target;
+  statsState.breadcrumb = bc;
+  document.getElementById('statsLevel').value = level;
+  renderStatsPage();
+}
+
+function resetStatsQuery() {
+  document.getElementById('statsLevel').value = '市级';
+  document.getElementById('statsDeptName').value = '';
+  statsState = { breadcrumb: [{ name: '湖北省', level: '市级' }], currentNode: STATS_TREE.children[0] };
+  renderStatsPage();
+}
+
+function onStatsLevelChange() {
+  const level = document.getElementById('statsLevel').value;
+  const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局' };
+  const found = findNodeByName(STATS_TREE, defaultMap[level] || '省级');
+  if (found) {
+    statsState.currentNode = found.node;
+    statsState.breadcrumb = found.path.map((name, i) => {
+      const levels = ['省级', '市级', '分局', '派出所'];
+      return { name, level: levels[Math.min(i, 3)] };
+    });
+  }
+  renderStatsPage();
+}
+
+function findNodeByName(node, name, path = []) {
+  if (node.name === name) return { node, path };
+  for (const child of node.children) {
+    const result = findNodeByName(child, name, [...path, node.name]);
+    if (result) return result;
+  }
+  return null;
+}
+
+// ============================================================
+// 逐级下钻
+// ============================================================
+function drillToChild(deptName) {
+  const child = statsState.currentNode.children.find(c => c.name === deptName);
+  if (!child || !child.children.length) return;
+
+  statsState.currentNode = child;
+  statsState.breadcrumb.push({ name: child.name, level: child.level });
+  document.getElementById('statsLevel').value = child.level;
+  renderStatsPage();
+}
+
+// ============================================================
+// 面包屑
+// ============================================================
+function breadcrumbClick(index) {
+  const item = statsState.breadcrumb[index];
+  const found = findNodeByName(STATS_TREE, item.name);
+  if (found) {
+    statsState.currentNode = found.node;
+    statsState.breadcrumb = statsState.breadcrumb.slice(0, index + 1);
+    document.getElementById('statsLevel').value = item.level;
+    renderStatsPage();
+  }
+}
+
+// ============================================================
+// 渲染统计页
+// ============================================================
+function renderStatsPage() {
+  renderStatsBreadcrumb();
+  renderStatsCards();
+  renderStatsTable();
+}
+
+function renderStatsBreadcrumb() {
+  const container = document.getElementById('statsBreadcrumb');
+  container.innerHTML = statsState.breadcrumb.map((item, i) => {
+    const isLast = i === statsState.breadcrumb.length - 1;
+    const cls = isLast ? 'breadcrumb-item active' : 'breadcrumb-item';
+    const onclick = isLast ? '' : `onclick="breadcrumbClick(${i})"`;
+    return `<span class="${cls}" ${onclick}>${item.name}</span>`;
+  }).join('<span class="breadcrumb-sep">▶</span>');
+}
+
+function renderStatsCards() {
+  const node = statsState.currentNode;
+  const childrenCount = countChildren(node);
+
+  // Build cards from configured metrics
+  const cards = [
+    { icon: '🏛️', label: '当前部门', value: node.name },
+  ];
+
+  cards.push(
+    { icon: '📋', label: '下级部门数', value: childrenCount + ' 个' },
+  );
+
+  const display = cards;
+
+  document.getElementById('statsCards').innerHTML = display.map(c => `
+    <div class="stat-card">
+      <div class="flex items-center justify-between">
+        <span class="stat-card-label">${c.label}</span>
+        <span class="stat-card-icon" style="background:#f1f5f9">${c.icon}</span>
+      </div>
+      <div class="stat-card-value">${c.value}</div>
+    </div>
+  `).join('');
+}
+
+function renderStatsTable() {
+  // Dynamically build table header from configured metrics
+  const visibleMetrics = statsMetrics.filter(m => canViewMetricByPerm(m));
+  const theadRow = document.querySelector('#statsTable thead tr');
+  if (theadRow) {
+    const metricThs = visibleMetrics.map(m => { const u = m.unit ? ' (' + m.unit + ')' : ''; return '<th>' + m.name + u + '</th>'; }).join('');
+    theadRow.innerHTML = '<th>序号</th><th>部门名称</th>' + metricThs;
+  }
+
+  const children = statsState.currentNode.children;
+
+  document.getElementById('statsTableTitle').textContent =
+    children.length ? '下级部门列表' : '暂无下级部门';
+  document.getElementById('statsTableCount').textContent =
+    children.length ? `共 ${children.length} 个部门` : '';
+
+  const tbody = document.getElementById('statsTableBody');
+  const emptyEl = document.getElementById('statsEmpty');
+
+  if (!children.length) {
+    tbody.innerHTML = '';
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+
+  emptyEl.classList.add('hidden');
+
+  const levelColors = { '市级': '#3b82f6', '分局': '#8b5cf6', '派出所': '#6b7280' };
+
+  // Build table header dynamically from metrics
+  const metricCols = visibleMetrics.map(m => m.name);
+
+  tbody.innerHTML = children.map((c, i) => {
+    const color = levelColors[c.level] || '#6b7280';
+    const hasChildren = c.children.length > 0;
+    const clickable = hasChildren ? 'cursor:pointer' : '';
+    const onclick = hasChildren ? `onclick="drillToChild('${c.name}')"` : '';
+
+    // Build metric value cells
+    const metricCells = metricCols.map(name => {
+      if (name === '户数') return `<td>${c.households.toLocaleString()}</td>`;
+      if (name === '人口数') return `<td>${((c.households || 0) * 3.2).toLocaleString()}</td>`;
+      return '<td class="text-gray-300">—</td>';
+    }).join('');
+
+    return `<tr style="${clickable}" ${onclick}>
+      <td>${i + 1}</td>
+      <td>
+        <span style="color:${color};font-weight:600">${c.name}</span>
+        <span class="text-xs text-gray-400 ml-1">${c.level}</span>
+        ${hasChildren ? `<span class="text-xs text-blue-500 ml-1">(下级${c.children.length}个)</span>` : ''}
+      </td>
+      ${metricCells}
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================
+// 初始化统计页
+// ============================================================
+function initStatsPage() {
+  renderStatsMetrics();
+  updateStatsPreviewBtn();
+  // In edit mode, hide preview content
+  if (!isStatsPreviewMode) {
+    const previewEl = document.getElementById('statsPreviewContent');
+    if (previewEl) previewEl.classList.add('hidden');
+  }
+}
+
+// 切换到统计页时首次渲染
+const _origSwitchMenu2 = switchMenu;
+switchMenu = function(menu) {
+  _origSwitchMenu2(menu);
+  if (menu === 'stats') {
+    initStatsPage();
+  }
+};</script>
 </body>
 </html>
