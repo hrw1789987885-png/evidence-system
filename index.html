@@ -246,7 +246,7 @@
               <th style="width:32px"></th>
               <th style="width:40px">序号</th>
               <th>指标名称</th>
-              <th>数据源表</th>
+              <th style="width:240px">数据来源</th>
               <th>字段名</th>
               <th style="width:80px">单位</th>
               <th style="width:80px">权限</th>
@@ -279,6 +279,7 @@
               <option value="市级" selected>市级</option>
               <option value="分局">分局</option>
               <option value="派出所">派出所</option>
+              <option value="责任区">责任区</option>
             </select>
           </div>
         </div>
@@ -521,7 +522,7 @@ let previewPermissionLevel = '省级';
 let newTableRows = [];
 let newModeRows = [];
 
-const PERMISSION_LEVELS = ['省级', '市级', '分局', '派出所'];
+const PERMISSION_LEVELS = ['省级', '市级', '分局', '派出所', '责任区'];
 const DAMENG_SCHEMA_OPTIONS = [
   'SYSDBA', 'SYS', 'CTISYS', 'SYSAUDITOR', 'SYSSSO', 'SYSJOB', 'DMHR'
 ];
@@ -1549,49 +1550,173 @@ const STATS_TREE = {
           expanded: true,
           children: [
             { name: '武昌分局', level: '派出所', households: 58300, expanded: true, children: [
-              { name: '水果湖派出所', level: '派出所', households: 12800, expanded: false, children: [] },
-              { name: '中南路派出所', level: '派出所', households: 11500, expanded: false, children: [] },
-              { name: '积玉桥派出所', level: '派出所', households: 10200, expanded: false, children: [] },
-              { name: '首义路派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '粮道街派出所', level: '派出所', households: 8500, expanded: false, children: [] },
-              { name: '杨园派出所', level: '派出所', households: 5500, expanded: false, children: [] },
+              { name: '水果湖派出所', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '水果湖一区', level: '责任区', households: 4200, expanded: false, children: [] },
+              { name: '水果湖二区', level: '责任区', households: 3800, expanded: false, children: [] },
+              { name: '水果湖三区', level: '责任区', households: 4800, expanded: false, children: [] }
+            ] },
+              { name: '中南路派出所', level: '派出所', households: 11500, expanded: false, children: [
+              { name: '中南一区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '中南二区', level: '责任区', households: 4100, expanded: false, children: [] },
+              { name: '中南三区', level: '责任区', households: 3900, expanded: false, children: [] }
+            ] },
+              { name: '积玉桥派出所', level: '派出所', households: 10200, expanded: false, children: [
+              { name: '积玉桥东区', level: '责任区', households: 3100, expanded: false, children: [] },
+              { name: '积玉桥西区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '积玉桥南区', level: '责任区', households: 3500, expanded: false, children: [] }
+            ] },
+              { name: '首义路派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '首义北区', level: '责任区', households: 3200, expanded: false, children: [] },
+              { name: '首义南区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '首义东区', level: '责任区', households: 3200, expanded: false, children: [] }
+            ] },
+              { name: '粮道街派出所', level: '派出所', households: 8500, expanded: false, children: [
+              { name: '粮道街一区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '粮道街二区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '粮道街三区', level: '责任区', households: 2834, expanded: false, children: [] }
+            ] },
+              { name: '杨园派出所', level: '派出所', households: 5500, expanded: false, children: [
+              { name: '杨园一区', level: '责任区', households: 1833, expanded: false, children: [] },
+              { name: '杨园二区', level: '责任区', households: 1833, expanded: false, children: [] },
+              { name: '杨园三区', level: '责任区', households: 1834, expanded: false, children: [] }
+            ] },
             ]},
             { name: '江岸分局', level: '派出所', households: 52300, expanded: true, children: [
-              { name: '大智街派出所', level: '派出所', households: 11200, expanded: false, children: [] },
-              { name: '一元街派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '车站街派出所', level: '派出所', households: 10500, expanded: false, children: [] },
-              { name: '四唯街派出所', level: '派出所', households: 9200, expanded: false, children: [] },
-              { name: '后湖派出所', level: '派出所', households: 11600, expanded: false, children: [] },
+              { name: '大智街派出所', level: '派出所', households: 11200, expanded: false, children: [
+              { name: '大智东区', level: '责任区', households: 3800, expanded: false, children: [] },
+              { name: '大智西区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '大智北区', level: '责任区', households: 3800, expanded: false, children: [] }
+            ] },
+              { name: '一元街派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '一元街一区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '一元街二区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '一元街三区', level: '责任区', households: 3268, expanded: false, children: [] }
+            ] },
+              { name: '车站街派出所', level: '派出所', households: 10500, expanded: false, children: [
+              { name: '车站街一区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '车站街二区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '车站街三区', level: '责任区', households: 3500, expanded: false, children: [] }
+            ] },
+              { name: '四唯街派出所', level: '派出所', households: 9200, expanded: false, children: [
+              { name: '四唯街一区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '四唯街二区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '四唯街三区', level: '责任区', households: 3068, expanded: false, children: [] }
+            ] },
+              { name: '后湖派出所', level: '派出所', households: 11600, expanded: false, children: [
+              { name: '后湖一区', level: '责任区', households: 3866, expanded: false, children: [] },
+              { name: '后湖二区', level: '责任区', households: 3866, expanded: false, children: [] },
+              { name: '后湖三区', level: '责任区', households: 3868, expanded: false, children: [] }
+            ] },
             ]},
             { name: '洪山分局', level: '派出所', households: 48600, expanded: true, children: [
-              { name: '珞南街派出所', level: '派出所', households: 13500, expanded: false, children: [] },
-              { name: '关山街派出所', level: '派出所', households: 12100, expanded: false, children: [] },
-              { name: '狮子山派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '和平街派出所', level: '派出所', households: 13200, expanded: false, children: [] },
+              { name: '珞南街派出所', level: '派出所', households: 13500, expanded: false, children: [
+              { name: '珞南一区', level: '责任区', households: 4500, expanded: false, children: [] },
+              { name: '珞南二区', level: '责任区', households: 4200, expanded: false, children: [] },
+              { name: '珞南三区', level: '责任区', households: 4800, expanded: false, children: [] }
+            ] },
+              { name: '关山街派出所', level: '派出所', households: 12100, expanded: false, children: [
+              { name: '关山街一区', level: '责任区', households: 4033, expanded: false, children: [] },
+              { name: '关山街二区', level: '责任区', households: 4033, expanded: false, children: [] },
+              { name: '关山街三区', level: '责任区', households: 4034, expanded: false, children: [] }
+            ] },
+              { name: '狮子山派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '狮子山一区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '狮子山二区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '狮子山三区', level: '责任区', households: 3268, expanded: false, children: [] }
+            ] },
+              { name: '和平街派出所', level: '派出所', households: 13200, expanded: false, children: [
+              { name: '和平街一区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '和平街二区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '和平街三区', level: '责任区', households: 4400, expanded: false, children: [] }
+            ] },
             ]},
             { name: '汉阳分局', level: '派出所', households: 42500, expanded: true, children: [
-              { name: '建桥街派出所', level: '派出所', households: 10800, expanded: false, children: [] },
-              { name: '鹦鹉街派出所', level: '派出所', households: 9500, expanded: false, children: [] },
-              { name: '洲头街派出所', level: '派出所', households: 10200, expanded: false, children: [] },
-              { name: '琴断口派出所', level: '派出所', households: 12000, expanded: false, children: [] },
+              { name: '建桥街派出所', level: '派出所', households: 10800, expanded: false, children: [
+              { name: '建桥街一区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '建桥街二区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '建桥街三区', level: '责任区', households: 3600, expanded: false, children: [] }
+            ] },
+              { name: '鹦鹉街派出所', level: '派出所', households: 9500, expanded: false, children: [
+              { name: '鹦鹉街一区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '鹦鹉街二区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '鹦鹉街三区', level: '责任区', households: 3168, expanded: false, children: [] }
+            ] },
+              { name: '洲头街派出所', level: '派出所', households: 10200, expanded: false, children: [
+              { name: '洲头街一区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '洲头街二区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '洲头街三区', level: '责任区', households: 3400, expanded: false, children: [] }
+            ] },
+              { name: '琴断口派出所', level: '派出所', households: 12000, expanded: false, children: [
+              { name: '琴断口一区', level: '责任区', households: 4000, expanded: false, children: [] },
+              { name: '琴断口二区', level: '责任区', households: 4000, expanded: false, children: [] },
+              { name: '琴断口三区', level: '责任区', households: 4000, expanded: false, children: [] }
+            ] },
             ]},
             { name: '江汉分局', level: '派出所', households: 38600, expanded: true, children: [
-              { name: '民族街派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '民权街派出所', level: '派出所', households: 9200, expanded: false, children: [] },
-              { name: '花楼街派出所', level: '派出所', households: 8500, expanded: false, children: [] },
-              { name: '常青派出所', level: '派出所', households: 11100, expanded: false, children: [] },
+              { name: '民族街派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '民族街一区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '民族街二区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '民族街三区', level: '责任区', households: 3268, expanded: false, children: [] }
+            ] },
+              { name: '民权街派出所', level: '派出所', households: 9200, expanded: false, children: [
+              { name: '民权街一区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '民权街二区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '民权街三区', level: '责任区', households: 3068, expanded: false, children: [] }
+            ] },
+              { name: '花楼街派出所', level: '派出所', households: 8500, expanded: false, children: [
+              { name: '花楼街一区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '花楼街二区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '花楼街三区', level: '责任区', households: 2834, expanded: false, children: [] }
+            ] },
+              { name: '常青派出所', level: '派出所', households: 11100, expanded: false, children: [
+              { name: '常青一区', level: '责任区', households: 3700, expanded: false, children: [] },
+              { name: '常青二区', level: '责任区', households: 3700, expanded: false, children: [] },
+              { name: '常青三区', level: '责任区', households: 3700, expanded: false, children: [] }
+            ] },
             ]},
             { name: '硚口分局', level: '派出所', households: 36200, expanded: true, children: [
-              { name: '汉正街派出所', level: '派出所', households: 12800, expanded: false, children: [] },
-              { name: '宝丰街派出所', level: '派出所', households: 8600, expanded: false, children: [] },
-              { name: '古田派出所', level: '派出所', households: 7500, expanded: false, children: [] },
-              { name: '长丰派出所', level: '派出所', households: 7300, expanded: false, children: [] },
+              { name: '汉正街派出所', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '汉正街一区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '汉正街二区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '汉正街三区', level: '责任区', households: 4268, expanded: false, children: [] }
+            ] },
+              { name: '宝丰街派出所', level: '派出所', households: 8600, expanded: false, children: [
+              { name: '宝丰街一区', level: '责任区', households: 2866, expanded: false, children: [] },
+              { name: '宝丰街二区', level: '责任区', households: 2866, expanded: false, children: [] },
+              { name: '宝丰街三区', level: '责任区', households: 2868, expanded: false, children: [] }
+            ] },
+              { name: '古田派出所', level: '派出所', households: 7500, expanded: false, children: [
+              { name: '古田一区', level: '责任区', households: 2500, expanded: false, children: [] },
+              { name: '古田二区', level: '责任区', households: 2500, expanded: false, children: [] },
+              { name: '古田三区', level: '责任区', households: 2500, expanded: false, children: [] }
+            ] },
+              { name: '长丰派出所', level: '派出所', households: 7300, expanded: false, children: [
+              { name: '长丰一区', level: '责任区', households: 2433, expanded: false, children: [] },
+              { name: '长丰二区', level: '责任区', households: 2433, expanded: false, children: [] },
+              { name: '长丰三区', level: '责任区', households: 2434, expanded: false, children: [] }
+            ] },
             ]},
             { name: '青山分局', level: '派出所', households: 45300, expanded: true, children: [
-              { name: '红钢城派出所', level: '派出所', households: 11800, expanded: false, children: [] },
-              { name: '新沟桥派出所', level: '派出所', households: 10500, expanded: false, children: [] },
-              { name: '冶金街派出所', level: '派出所', households: 11200, expanded: false, children: [] },
-              { name: '钢花村派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+              { name: '红钢城派出所', level: '派出所', households: 11800, expanded: false, children: [
+              { name: '红钢城一区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '红钢城二区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '红钢城三区', level: '责任区', households: 3934, expanded: false, children: [] }
+            ] },
+              { name: '新沟桥派出所', level: '派出所', households: 10500, expanded: false, children: [
+              { name: '新沟桥一区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '新沟桥二区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '新沟桥三区', level: '责任区', households: 3500, expanded: false, children: [] }
+            ] },
+              { name: '冶金街派出所', level: '派出所', households: 11200, expanded: false, children: [
+              { name: '冶金街一区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '冶金街二区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '冶金街三区', level: '责任区', households: 3734, expanded: false, children: [] }
+            ] },
+              { name: '钢花村派出所', level: '派出所', households: 11800, expanded: false, children: [
+              { name: '钢花村一区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '钢花村二区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '钢花村三区', level: '责任区', households: 3934, expanded: false, children: [] }
+            ] },
             ]},
           ]
         },
@@ -1600,29 +1725,97 @@ const STATS_TREE = {
           expanded: true,
           children: [
             { name: '西陵分局', level: '派出所', households: 38500, expanded: true, children: [
-              { name: '学院街派出所', level: '派出所', households: 10200, expanded: false, children: [] },
-              { name: '云集街派出所', level: '派出所', households: 9500, expanded: false, children: [] },
-              { name: '西坝派出所', level: '派出所', households: 8800, expanded: false, children: [] },
-              { name: '葛洲坝派出所', level: '派出所', households: 10000, expanded: false, children: [] },
+              { name: '学院街派出所', level: '派出所', households: 10200, expanded: false, children: [
+              { name: '学院街一区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '学院街二区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '学院街三区', level: '责任区', households: 3400, expanded: false, children: [] }
+            ] },
+              { name: '云集街派出所', level: '派出所', households: 9500, expanded: false, children: [
+              { name: '云集街一区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '云集街二区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '云集街三区', level: '责任区', households: 3168, expanded: false, children: [] }
+            ] },
+              { name: '西坝派出所', level: '派出所', households: 8800, expanded: false, children: [
+              { name: '西坝一区', level: '责任区', households: 2933, expanded: false, children: [] },
+              { name: '西坝二区', level: '责任区', households: 2933, expanded: false, children: [] },
+              { name: '西坝三区', level: '责任区', households: 2934, expanded: false, children: [] }
+            ] },
+              { name: '葛洲坝派出所', level: '派出所', households: 10000, expanded: false, children: [
+              { name: '葛洲坝一区', level: '责任区', households: 3333, expanded: false, children: [] },
+              { name: '葛洲坝二区', level: '责任区', households: 3333, expanded: false, children: [] },
+              { name: '葛洲坝三区', level: '责任区', households: 3334, expanded: false, children: [] }
+            ] },
             ]},
             { name: '伍家岗分局', level: '派出所', households: 35200, expanded: true, children: [
-              { name: '大公桥派出所', level: '派出所', households: 9200, expanded: false, children: [] },
-              { name: '万寿桥派出所', level: '派出所', households: 8800, expanded: false, children: [] },
-              { name: '宝塔河派出所', level: '派出所', households: 8500, expanded: false, children: [] },
-              { name: '伍家派出所', level: '派出所', households: 8700, expanded: false, children: [] },
+              { name: '大公桥派出所', level: '派出所', households: 9200, expanded: false, children: [
+              { name: '大公桥一区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '大公桥二区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '大公桥三区', level: '责任区', households: 3068, expanded: false, children: [] }
+            ] },
+              { name: '万寿桥派出所', level: '派出所', households: 8800, expanded: false, children: [
+              { name: '万寿桥一区', level: '责任区', households: 2933, expanded: false, children: [] },
+              { name: '万寿桥二区', level: '责任区', households: 2933, expanded: false, children: [] },
+              { name: '万寿桥三区', level: '责任区', households: 2934, expanded: false, children: [] }
+            ] },
+              { name: '宝塔河派出所', level: '派出所', households: 8500, expanded: false, children: [
+              { name: '宝塔河一区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '宝塔河二区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '宝塔河三区', level: '责任区', households: 2834, expanded: false, children: [] }
+            ] },
+              { name: '伍家派出所', level: '派出所', households: 8700, expanded: false, children: [
+              { name: '伍家一区', level: '责任区', households: 2900, expanded: false, children: [] },
+              { name: '伍家二区', level: '责任区', households: 2900, expanded: false, children: [] },
+              { name: '伍家三区', level: '责任区', households: 2900, expanded: false, children: [] }
+            ] },
             ]},
             { name: '夷陵分局', level: '派出所', households: 48600, expanded: true, children: [
-              { name: '小溪塔派出所', level: '派出所', households: 13500, expanded: false, children: [] },
-              { name: '龙泉派出所', level: '派出所', households: 10200, expanded: false, children: [] },
-              { name: '鸦鹊岭派出所', level: '派出所', households: 8500, expanded: false, children: [] },
-              { name: '黄花派出所', level: '派出所', households: 7200, expanded: false, children: [] },
-              { name: '樟村坪派出所', level: '派出所', households: 9200, expanded: false, children: [] },
+              { name: '小溪塔派出所', level: '派出所', households: 13500, expanded: false, children: [
+              { name: '小溪塔一区', level: '责任区', households: 4500, expanded: false, children: [] },
+              { name: '小溪塔二区', level: '责任区', households: 4500, expanded: false, children: [] },
+              { name: '小溪塔三区', level: '责任区', households: 4500, expanded: false, children: [] }
+            ] },
+              { name: '龙泉派出所', level: '派出所', households: 10200, expanded: false, children: [
+              { name: '龙泉一区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '龙泉二区', level: '责任区', households: 3400, expanded: false, children: [] },
+              { name: '龙泉三区', level: '责任区', households: 3400, expanded: false, children: [] }
+            ] },
+              { name: '鸦鹊岭派出所', level: '派出所', households: 8500, expanded: false, children: [
+              { name: '鸦鹊岭一区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '鸦鹊岭二区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '鸦鹊岭三区', level: '责任区', households: 2834, expanded: false, children: [] }
+            ] },
+              { name: '黄花派出所', level: '派出所', households: 7200, expanded: false, children: [
+              { name: '黄花一区', level: '责任区', households: 2400, expanded: false, children: [] },
+              { name: '黄花二区', level: '责任区', households: 2400, expanded: false, children: [] },
+              { name: '黄花三区', level: '责任区', households: 2400, expanded: false, children: [] }
+            ] },
+              { name: '樟村坪派出所', level: '派出所', households: 9200, expanded: false, children: [
+              { name: '樟村坪一区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '樟村坪二区', level: '责任区', households: 3066, expanded: false, children: [] },
+              { name: '樟村坪三区', level: '责任区', households: 3068, expanded: false, children: [] }
+            ] },
             ]},
             { name: '点军分局', level: '派出所', households: 33900, expanded: true, children: [
-              { name: '点军派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '联棚派出所', level: '派出所', households: 8500, expanded: false, children: [] },
-              { name: '土城派出所', level: '派出所', households: 7600, expanded: false, children: [] },
-              { name: '桥边派出所', level: '派出所', households: 8000, expanded: false, children: [] },
+              { name: '点军派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '点军一区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '点军二区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '点军三区', level: '责任区', households: 3268, expanded: false, children: [] }
+            ] },
+              { name: '联棚派出所', level: '派出所', households: 8500, expanded: false, children: [
+              { name: '联棚一区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '联棚二区', level: '责任区', households: 2833, expanded: false, children: [] },
+              { name: '联棚三区', level: '责任区', households: 2834, expanded: false, children: [] }
+            ] },
+              { name: '土城派出所', level: '派出所', households: 7600, expanded: false, children: [
+              { name: '土城一区', level: '责任区', households: 2533, expanded: false, children: [] },
+              { name: '土城二区', level: '责任区', households: 2533, expanded: false, children: [] },
+              { name: '土城三区', level: '责任区', households: 2534, expanded: false, children: [] }
+            ] },
+              { name: '桥边派出所', level: '派出所', households: 8000, expanded: false, children: [
+              { name: '桥边一区', level: '责任区', households: 2666, expanded: false, children: [] },
+              { name: '桥边二区', level: '责任区', households: 2666, expanded: false, children: [] },
+              { name: '桥边三区', level: '责任区', households: 2668, expanded: false, children: [] }
+            ] },
             ]},
           ]
         },
@@ -1631,22 +1824,70 @@ const STATS_TREE = {
           expanded: true,
           children: [
             { name: '襄城分局', level: '派出所', households: 48800, expanded: true, children: [
-              { name: '古城派出所', level: '派出所', households: 13200, expanded: false, children: [] },
-              { name: '真武山派出所', level: '派出所', households: 10800, expanded: false, children: [] },
-              { name: '檀溪派出所', level: '派出所', households: 11500, expanded: false, children: [] },
-              { name: '庞公派出所', level: '派出所', households: 13300, expanded: false, children: [] },
+              { name: '古城派出所', level: '派出所', households: 13200, expanded: false, children: [
+              { name: '古城东区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '古城西区', level: '责任区', households: 4200, expanded: false, children: [] },
+              { name: '古城北区', level: '责任区', households: 4600, expanded: false, children: [] }
+            ] },
+              { name: '真武山派出所', level: '派出所', households: 10800, expanded: false, children: [
+              { name: '真武山一区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '真武山二区', level: '责任区', households: 3600, expanded: false, children: [] },
+              { name: '真武山三区', level: '责任区', households: 3600, expanded: false, children: [] }
+            ] },
+              { name: '檀溪派出所', level: '派出所', households: 11500, expanded: false, children: [
+              { name: '檀溪一区', level: '责任区', households: 3833, expanded: false, children: [] },
+              { name: '檀溪二区', level: '责任区', households: 3833, expanded: false, children: [] },
+              { name: '檀溪三区', level: '责任区', households: 3834, expanded: false, children: [] }
+            ] },
+              { name: '庞公派出所', level: '派出所', households: 13300, expanded: false, children: [
+              { name: '庞公一区', level: '责任区', households: 4433, expanded: false, children: [] },
+              { name: '庞公二区', level: '责任区', households: 4433, expanded: false, children: [] },
+              { name: '庞公三区', level: '责任区', households: 4434, expanded: false, children: [] }
+            ] },
             ]},
             { name: '樊城分局', level: '派出所', households: 52300, expanded: true, children: [
-              { name: '汉江派出所', level: '派出所', households: 14200, expanded: false, children: [] },
-              { name: '王寨派出所', level: '派出所', households: 12800, expanded: false, children: [] },
-              { name: '中原派出所', level: '派出所', households: 13500, expanded: false, children: [] },
-              { name: '清河口派出所', level: '派出所', households: 11800, expanded: false, children: [] },
+              { name: '汉江派出所', level: '派出所', households: 14200, expanded: false, children: [
+              { name: '汉江一区', level: '责任区', households: 4733, expanded: false, children: [] },
+              { name: '汉江二区', level: '责任区', households: 4733, expanded: false, children: [] },
+              { name: '汉江三区', level: '责任区', households: 4734, expanded: false, children: [] }
+            ] },
+              { name: '王寨派出所', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '王寨一区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '王寨二区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '王寨三区', level: '责任区', households: 4268, expanded: false, children: [] }
+            ] },
+              { name: '中原派出所', level: '派出所', households: 13500, expanded: false, children: [
+              { name: '中原一区', level: '责任区', households: 4500, expanded: false, children: [] },
+              { name: '中原二区', level: '责任区', households: 4500, expanded: false, children: [] },
+              { name: '中原三区', level: '责任区', households: 4500, expanded: false, children: [] }
+            ] },
+              { name: '清河口派出所', level: '派出所', households: 11800, expanded: false, children: [
+              { name: '清河口一区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '清河口二区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '清河口三区', level: '责任区', households: 3934, expanded: false, children: [] }
+            ] },
             ]},
             { name: '襄州分局', level: '派出所', households: 41400, expanded: true, children: [
-              { name: '张湾派出所', level: '派出所', households: 12800, expanded: false, children: [] },
-              { name: '肖湾派出所', level: '派出所', households: 9800, expanded: false, children: [] },
-              { name: '双沟派出所', level: '派出所', households: 9500, expanded: false, children: [] },
-              { name: '伙牌派出所', level: '派出所', households: 9300, expanded: false, children: [] },
+              { name: '张湾派出所', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '张湾一区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '张湾二区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '张湾三区', level: '责任区', households: 4268, expanded: false, children: [] }
+            ] },
+              { name: '肖湾派出所', level: '派出所', households: 9800, expanded: false, children: [
+              { name: '肖湾一区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '肖湾二区', level: '责任区', households: 3266, expanded: false, children: [] },
+              { name: '肖湾三区', level: '责任区', households: 3268, expanded: false, children: [] }
+            ] },
+              { name: '双沟派出所', level: '派出所', households: 9500, expanded: false, children: [
+              { name: '双沟一区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '双沟二区', level: '责任区', households: 3166, expanded: false, children: [] },
+              { name: '双沟三区', level: '责任区', households: 3168, expanded: false, children: [] }
+            ] },
+              { name: '伙牌派出所', level: '派出所', households: 9300, expanded: false, children: [
+              { name: '伙牌一区', level: '责任区', households: 3100, expanded: false, children: [] },
+              { name: '伙牌二区', level: '责任区', households: 3100, expanded: false, children: [] },
+              { name: '伙牌三区', level: '责任区', households: 3100, expanded: false, children: [] }
+            ] },
             ]},
           ]
         },
@@ -1655,44 +1896,140 @@ const STATS_TREE = {
           expanded: true,
           children: [
             { name: '沙市分局', level: '派出所', households: 45200, expanded: true, children: [
-              { name: '中山路派出所', level: '派出所', households: 11800, expanded: false, children: [] },
-              { name: '崇文街派出所', level: '派出所', households: 10500, expanded: false, children: [] },
-              { name: '解放路派出所', level: '派出所', households: 11200, expanded: false, children: [] },
-              { name: '胜利街派出所', level: '派出所', households: 11700, expanded: false, children: [] },
+              { name: '中山路派出所', level: '派出所', households: 11800, expanded: false, children: [
+              { name: '中山路一区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '中山路二区', level: '责任区', households: 3933, expanded: false, children: [] },
+              { name: '中山路三区', level: '责任区', households: 3934, expanded: false, children: [] }
+            ] },
+              { name: '崇文街派出所', level: '派出所', households: 10500, expanded: false, children: [
+              { name: '崇文街一区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '崇文街二区', level: '责任区', households: 3500, expanded: false, children: [] },
+              { name: '崇文街三区', level: '责任区', households: 3500, expanded: false, children: [] }
+            ] },
+              { name: '解放路派出所', level: '派出所', households: 11200, expanded: false, children: [
+              { name: '解放路一区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '解放路二区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '解放路三区', level: '责任区', households: 3734, expanded: false, children: [] }
+            ] },
+              { name: '胜利街派出所', level: '派出所', households: 11700, expanded: false, children: [
+              { name: '胜利街一区', level: '责任区', households: 3900, expanded: false, children: [] },
+              { name: '胜利街二区', level: '责任区', households: 3900, expanded: false, children: [] },
+              { name: '胜利街三区', level: '责任区', households: 3900, expanded: false, children: [] }
+            ] },
             ]},
             { name: '荆州分局', level: '派出所', households: 48200, expanded: true, children: [
-              { name: '东城派出所', level: '派出所', households: 13200, expanded: false, children: [] },
-              { name: '西城派出所', level: '派出所', households: 11200, expanded: false, children: [] },
-              { name: '城南派出所', level: '派出所', households: 12500, expanded: false, children: [] },
-              { name: '郢城派出所', level: '派出所', households: 11300, expanded: false, children: [] },
+              { name: '东城派出所', level: '派出所', households: 13200, expanded: false, children: [
+              { name: '东城一区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '东城二区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '东城三区', level: '责任区', households: 4400, expanded: false, children: [] }
+            ] },
+              { name: '西城派出所', level: '派出所', households: 11200, expanded: false, children: [
+              { name: '西城一区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '西城二区', level: '责任区', households: 3733, expanded: false, children: [] },
+              { name: '西城三区', level: '责任区', households: 3734, expanded: false, children: [] }
+            ] },
+              { name: '城南派出所', level: '派出所', households: 12500, expanded: false, children: [
+              { name: '城南一区', level: '责任区', households: 4166, expanded: false, children: [] },
+              { name: '城南二区', level: '责任区', households: 4166, expanded: false, children: [] },
+              { name: '城南三区', level: '责任区', households: 4168, expanded: false, children: [] }
+            ] },
+              { name: '郢城派出所', level: '派出所', households: 11300, expanded: false, children: [
+              { name: '郢城一区', level: '责任区', households: 3766, expanded: false, children: [] },
+              { name: '郢城二区', level: '责任区', households: 3766, expanded: false, children: [] },
+              { name: '郢城三区', level: '责任区', households: 3768, expanded: false, children: [] }
+            ] },
             ]},
             { name: '公安分局', level: '派出所', households: 35200, expanded: true, children: [
-              { name: '斗湖堤派出所', level: '派出所', households: 12800, expanded: false, children: [] },
-              { name: '埠河派出所', level: '派出所', households: 8200, expanded: false, children: [] },
-              { name: '杨家厂派出所', level: '派出所', households: 7500, expanded: false, children: [] },
-              { name: '南平派出所', level: '派出所', households: 6700, expanded: false, children: [] },
+              { name: '斗湖堤派出所', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '斗湖堤一区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '斗湖堤二区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '斗湖堤三区', level: '责任区', households: 4268, expanded: false, children: [] }
+            ] },
+              { name: '埠河派出所', level: '派出所', households: 8200, expanded: false, children: [
+              { name: '埠河一区', level: '责任区', households: 2733, expanded: false, children: [] },
+              { name: '埠河二区', level: '责任区', households: 2733, expanded: false, children: [] },
+              { name: '埠河三区', level: '责任区', households: 2734, expanded: false, children: [] }
+            ] },
+              { name: '杨家厂派出所', level: '派出所', households: 7500, expanded: false, children: [
+              { name: '杨家厂一区', level: '责任区', households: 2500, expanded: false, children: [] },
+              { name: '杨家厂二区', level: '责任区', households: 2500, expanded: false, children: [] },
+              { name: '杨家厂三区', level: '责任区', households: 2500, expanded: false, children: [] }
+            ] },
+              { name: '南平派出所', level: '派出所', households: 6700, expanded: false, children: [
+              { name: '南平一区', level: '责任区', households: 2233, expanded: false, children: [] },
+              { name: '南平二区', level: '责任区', households: 2233, expanded: false, children: [] },
+              { name: '南平三区', level: '责任区', households: 2234, expanded: false, children: [] }
+            ] },
             ]},
           ]
         },
         { name: '黄石市', level: '分局', households: 82600, expanded: false, children: [
-          { name: '黄石港分局', level: '派出所', households: 28500, expanded: false, children: [] },
-          { name: '西塞山分局', level: '派出所', households: 22300, expanded: false, children: [] },
-          { name: '下陆分局', level: '派出所', households: 18600, expanded: false, children: [] },
-          { name: '铁山分局', level: '派出所', households: 13200, expanded: false, children: [] },
+          { name: '黄石港分局', level: '派出所', households: 28500, expanded: false, children: [
+              { name: '黄石港分局一区', level: '责任区', households: 9500, expanded: false, children: [] },
+              { name: '黄石港分局二区', level: '责任区', households: 9500, expanded: false, children: [] },
+              { name: '黄石港分局三区', level: '责任区', households: 9500, expanded: false, children: [] }
+            ] },
+          { name: '西塞山分局', level: '派出所', households: 22300, expanded: false, children: [
+              { name: '西塞山分局一区', level: '责任区', households: 7433, expanded: false, children: [] },
+              { name: '西塞山分局二区', level: '责任区', households: 7433, expanded: false, children: [] },
+              { name: '西塞山分局三区', level: '责任区', households: 7434, expanded: false, children: [] }
+            ] },
+          { name: '下陆分局', level: '派出所', households: 18600, expanded: false, children: [
+              { name: '下陆分局一区', level: '责任区', households: 6200, expanded: false, children: [] },
+              { name: '下陆分局二区', level: '责任区', households: 6200, expanded: false, children: [] },
+              { name: '下陆分局三区', level: '责任区', households: 6200, expanded: false, children: [] }
+            ] },
+          { name: '铁山分局', level: '派出所', households: 13200, expanded: false, children: [
+              { name: '铁山分局一区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '铁山分局二区', level: '责任区', households: 4400, expanded: false, children: [] },
+              { name: '铁山分局三区', level: '责任区', households: 4400, expanded: false, children: [] }
+            ] },
         ]},
         { name: '十堰市', level: '分局', households: 65300, expanded: false, children: [
-          { name: '茅箭分局', level: '派出所', households: 22800, expanded: false, children: [] },
-          { name: '张湾分局', level: '派出所', households: 21500, expanded: false, children: [] },
-          { name: '郧阳分局', level: '派出所', households: 21000, expanded: false, children: [] },
+          { name: '茅箭分局', level: '派出所', households: 22800, expanded: false, children: [
+              { name: '茅箭分局一区', level: '责任区', households: 7600, expanded: false, children: [] },
+              { name: '茅箭分局二区', level: '责任区', households: 7600, expanded: false, children: [] },
+              { name: '茅箭分局三区', level: '责任区', households: 7600, expanded: false, children: [] }
+            ] },
+          { name: '张湾分局', level: '派出所', households: 21500, expanded: false, children: [
+              { name: '张湾分局一区', level: '责任区', households: 7166, expanded: false, children: [] },
+              { name: '张湾分局二区', level: '责任区', households: 7166, expanded: false, children: [] },
+              { name: '张湾分局三区', level: '责任区', households: 7168, expanded: false, children: [] }
+            ] },
+          { name: '郧阳分局', level: '派出所', households: 21000, expanded: false, children: [
+              { name: '郧阳分局一区', level: '责任区', households: 7000, expanded: false, children: [] },
+              { name: '郧阳分局二区', level: '责任区', households: 7000, expanded: false, children: [] },
+              { name: '郧阳分局三区', level: '责任区', households: 7000, expanded: false, children: [] }
+            ] },
         ]},
         { name: '鄂州市', level: '分局', households: 48200, expanded: false, children: [
-          { name: '鄂城分局', level: '派出所', households: 26500, expanded: false, children: [] },
-          { name: '华容分局', level: '派出所', households: 12800, expanded: false, children: [] },
-          { name: '梁子湖分局', level: '派出所', households: 8900, expanded: false, children: [] },
+          { name: '鄂城分局', level: '派出所', households: 26500, expanded: false, children: [
+              { name: '鄂城分局一区', level: '责任区', households: 8833, expanded: false, children: [] },
+              { name: '鄂城分局二区', level: '责任区', households: 8833, expanded: false, children: [] },
+              { name: '鄂城分局三区', level: '责任区', households: 8834, expanded: false, children: [] }
+            ] },
+          { name: '华容分局', level: '派出所', households: 12800, expanded: false, children: [
+              { name: '华容分局一区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '华容分局二区', level: '责任区', households: 4266, expanded: false, children: [] },
+              { name: '华容分局三区', level: '责任区', households: 4268, expanded: false, children: [] }
+            ] },
+          { name: '梁子湖分局', level: '派出所', households: 8900, expanded: false, children: [
+              { name: '梁子湖分局一区', level: '责任区', households: 2966, expanded: false, children: [] },
+              { name: '梁子湖分局二区', level: '责任区', households: 2966, expanded: false, children: [] },
+              { name: '梁子湖分局三区', level: '责任区', households: 2968, expanded: false, children: [] }
+            ] },
         ]},
         { name: '孝感市', level: '分局', households: 37400, expanded: false, children: [
-          { name: '孝南分局', level: '派出所', households: 21200, expanded: false, children: [] },
-          { name: '汉川分局', level: '派出所', households: 16200, expanded: false, children: [] },
+          { name: '孝南分局', level: '派出所', households: 21200, expanded: false, children: [
+              { name: '孝南分局一区', level: '责任区', households: 7066, expanded: false, children: [] },
+              { name: '孝南分局二区', level: '责任区', households: 7066, expanded: false, children: [] },
+              { name: '孝南分局三区', level: '责任区', households: 7068, expanded: false, children: [] }
+            ] },
+          { name: '汉川分局', level: '派出所', households: 16200, expanded: false, children: [
+              { name: '汉川分局一区', level: '责任区', households: 5400, expanded: false, children: [] },
+              { name: '汉川分局二区', level: '责任区', households: 5400, expanded: false, children: [] },
+              { name: '汉川分局三区', level: '责任区', households: 5400, expanded: false, children: [] }
+            ] },
         ]},
       ]
     },
@@ -1706,8 +2043,8 @@ const STATS_TREE = {
 // ============================================================
 const STATS_CONFIG_KEY = 'sc_stats_metrics';
 let statsMetrics = JSON.parse(localStorage.getItem(STATS_CONFIG_KEY) || 'null') || [
-  { id: 'm1', name: '户数', table: 'household', field: 'household_count', unit: '户', order: 1 },
-  { id: 'm2', name: '人口数', table: 'household', field: 'population', unit: '人', order: 2 },
+  { id: 'm1', name: '户数', sourceType: '表', table: 'household', field: 'household_count', unit: '户', order: 1 },
+  { id: 'm2', name: '人口数', sourceType: '表', table: 'household', field: 'population', unit: '人', order: 2 },
 ];
 let isStatsPreviewMode = false;
 let statsPreviewPermLevel = '市级'; // 预览账号等级
@@ -1766,9 +2103,19 @@ function renderStatsMetrics() {
       <td><input type="text" value="${m.name}" style="width:100px"
            onchange="updateStatsMetric('${m.id}','name',this.value)" /></td>
       <td>
-        <select style="width:130px" onchange="updateStatsMetric('${m.id}','table',this.value)">
-          ${tables.map(t => `<option value="${t}" ${m.table === t ? 'selected' : ''}>${t}</option>`).join('')}
-        </select>
+        <div class="flex items-center gap-1">
+          <select style="width:60px" onchange="updateStatsMetric('${m.id}','sourceType',this.value);renderStatsMetrics()">
+            <option value="表" ${(m.sourceType || '表') === '表' ? 'selected' : ''}>表</option>
+            <option value="模式" ${(m.sourceType || '表') === '模式' ? 'selected' : ''}>模式</option>
+          </select>
+          ${(m.sourceType || '表') === '表' ? `
+          <select style="width:130px" onchange="updateStatsMetric('${m.id}','table',this.value)">
+            ${tables.map(t => `<option value="${t}" ${m.table === t ? 'selected' : ''}>${t}</option>`).join('')}
+          </select>` : `
+          <select style="width:130px" onchange="updateStatsMetric('${m.id}','schema',this.value)">
+            ${getDamengSchemaOptions().map(s => `<option value="${s}" ${(m.schema || '') === s ? 'selected' : ''}>${s}</option>`).join('')}
+          </select>`}
+        </div>
       </td>
       <td><input type="text" value="${m.field}" style="width:120px"
            onchange="updateStatsMetric('${m.id}','field',this.value)" /></td>
@@ -1786,7 +2133,7 @@ function renderStatsMetrics() {
   `).join('');
 }
 function addStatsMetric() {
-  statsMetrics.push({ id: uid2(), name: '', table: getDataSourceTableOptions()[0] || '', field: '', unit: '', order: statsMetrics.length + 1, permissionLevel: '派出所' });
+  statsMetrics.push({ id: uid2(), name: '', sourceType: '表', table: getDataSourceTableOptions()[0] || '', schema: getDamengSchemaOptions()[0] || '', field: '', unit: '', order: statsMetrics.length + 1, permissionLevel: '派出所' });
   renderStatsMetrics();
 }
 
@@ -1886,17 +2233,17 @@ function queryStats() {
     if (found) {
       target = found.node;
       bc = found.path.map((name, i) => {
-        const levels = ['省级', '市级', '分局', '派出所'];
+        const levels = ['省级', '市级', '分局', '派出所', '责任区'];
         return { name, level: levels[Math.min(i, 3)] };
       });
     }
   } else if (level !== '省级') {
-    const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局' };
+    const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局', '责任区': '斗湖堤派出所' };
     const found = findNodeByName(STATS_TREE, defaultMap[level] || '湖北省');
     if (found) {
       target = found.node;
       bc = found.path.map((name, i) => {
-        const levels = ['省级', '市级', '分局', '派出所'];
+        const levels = ['省级', '市级', '分局', '派出所', '责任区'];
         return { name, level: levels[Math.min(i, 3)] };
       });
     }
@@ -1917,12 +2264,12 @@ function resetStatsQuery() {
 
 function onStatsLevelChange() {
   const level = document.getElementById('statsLevel').value;
-  const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局' };
+  const defaultMap = { '省级': '湖北省', '市级': '湖北省', '分局': '武汉市', '派出所': '武昌分局', '责任区': '斗湖堤派出所' };
   const found = findNodeByName(STATS_TREE, defaultMap[level] || '省级');
   if (found) {
     statsState.currentNode = found.node;
     statsState.breadcrumb = found.path.map((name, i) => {
-      const levels = ['省级', '市级', '分局', '派出所'];
+      const levels = ['省级', '市级', '分局', '派出所', '责任区'];
       return { name, level: levels[Math.min(i, 3)] };
     });
   }
@@ -2037,7 +2384,7 @@ function renderStatsTable() {
 
   emptyEl.classList.add('hidden');
 
-  const levelColors = { '市级': '#3b82f6', '分局': '#8b5cf6', '派出所': '#6b7280' };
+  const levelColors = { '市级': '#3b82f6', '分局': '#8b5cf6', '派出所': '#6b7280', '责任区': '#9ca3af' };
 
   // Build table header dynamically from metrics
   const metricCols = visibleMetrics.map(m => m.name);
